@@ -14,8 +14,8 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
-from valuation.data import fetch_historical_inputs, fetch_inputs, fetch_price_history
 from valuation.models import Assumptions, CompanyInputs, evaluate, sensitivity_table
+from valuation.providers import DEFAULT_PROVIDER, available_providers, get_provider
 from valuation.tracker import DEFAULT_HISTORY_PATH, append_snapshot, load_history
 
 st.set_page_config(page_title="적정주가 템플릿", page_icon="📈", layout="wide")
@@ -31,18 +31,18 @@ SIGNAL_EMOJI = {
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def cached_inputs(ticker: str) -> CompanyInputs:
-    return fetch_inputs(ticker)
+def cached_inputs(provider_name: str, ticker: str) -> CompanyInputs:
+    return get_provider(provider_name).fetch_inputs(ticker)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def cached_history(ticker: str, period: str) -> pd.DataFrame:
-    return fetch_price_history(ticker, period)
+def cached_history(provider_name: str, ticker: str, period: str) -> pd.DataFrame:
+    return get_provider(provider_name).fetch_price_history(ticker, period)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def cached_historical_inputs(ticker: str) -> list[CompanyInputs]:
-    return fetch_historical_inputs(ticker)
+def cached_historical_inputs(provider_name: str, ticker: str) -> list[CompanyInputs]:
+    return get_provider(provider_name).fetch_historical_inputs(ticker)
 
 
 st.title("📈 적정주가 산출 템플릿")
@@ -53,6 +53,18 @@ st.caption(
 )
 
 with st.sidebar:
+    st.header("🔌 데이터 소스")
+    provider_name = st.selectbox(
+        "프로바이더",
+        available_providers(),
+        index=available_providers().index(DEFAULT_PROVIDER),
+        help=(
+            "yahoo: 야후 파이낸스 (재무제표·가격 이력·과거 재무 모두 제공)\n\n"
+            "tradingview: TradingView 스캐너 (최신 펀더멘털 스냅샷만 제공 — "
+            "가격 이력/과거 궤적 차트는 생략됩니다)"
+        ),
+    )
+    st.divider()
     st.header("⚙️ 밸류에이션 가정")
     risk_free = st.slider("무위험수익률 (미 10년물)", 0.01, 0.08, 0.043, 0.001, format="%.3f")
     erp = st.slider("주식 위험 프리미엄", 0.02, 0.08, 0.05, 0.005, format="%.3f")
@@ -112,10 +124,10 @@ tickers = [t.strip().upper() for t in tickers_text.split(",") if t.strip()]
 results = []
 inputs_map: dict[str, CompanyInputs] = {}
 errors: list[str] = []
-with st.spinner("데이터 수집 중 (야후 파이낸스)…"):
+with st.spinner(f"데이터 수집 중 ({provider_name})…"):
     for ticker in tickers:
         try:
-            inputs = cached_inputs(ticker)
+            inputs = cached_inputs(provider_name, ticker)
             inputs_map[ticker] = inputs
             results.append(evaluate(inputs, assumptions, weights))
         except ValueError as exc:
@@ -189,15 +201,18 @@ if results:
     )
 
     with tab_chart:
-        price_hist = cached_history(selected, "3y")
+        price_hist = cached_history(provider_name, selected, "3y")
         if price_hist.empty:
-            st.warning("주가 이력을 불러오지 못했습니다.")
+            st.warning(
+                f"'{provider_name}' 소스는 주가 이력을 제공하지 않거나 조회에 실패했습니다. "
+                "궤적 차트는 yahoo 소스에서 이용할 수 있습니다."
+            )
         else:
             chart_df = price_hist.rename(columns={"Close": "시장 주가"})
             chart_df.index = chart_df.index.tz_localize(None)
             # 과거 회계연도별 내재가치 (성장률 미상 → 보수적 추정)
             past_points = []
-            for snap in cached_historical_inputs(selected):
+            for snap in cached_historical_inputs(provider_name, selected):
                 past = evaluate(snap, assumptions, weights)
                 if past.composite:
                     past_points.append((pd.Timestamp(snap.name), past.composite))
@@ -249,7 +264,10 @@ if results:
                 "베타": inputs.beta,
             }
         )
-        st.caption("출처: 야후 파이낸스 (원천: SEC EDGAR 10-K/10-Q 공시). 일회성 손익에 의한 ROE 왜곡 여부를 별도 확인하세요.")
+        st.caption(
+            f"출처: {provider_name} (원천: SEC EDGAR 10-K/10-Q 공시). "
+            "일회성 손익에 의한 ROE 왜곡 여부를 별도 확인하세요."
+        )
 
     with tab_history:
         history = load_history()

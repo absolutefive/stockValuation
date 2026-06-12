@@ -2,6 +2,7 @@
 
 사용 예:
     python -m valuation.cli AAPL MSFT GOOGL
+    python -m valuation.cli NVDA --provider tradingview
     python -m valuation.cli NVDA --risk-free 0.045 --terminal-growth 0.03
     python -m valuation.cli AAPL --save   # data/history.csv에 일별 스냅샷 기록
 """
@@ -12,8 +13,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from valuation.data import fetch_inputs
 from valuation.models import Assumptions, evaluate
+from valuation.providers import DEFAULT_PROVIDER, available_providers, get_provider
 from valuation.tracker import DEFAULT_HISTORY_PATH, append_snapshot
 
 
@@ -24,6 +25,12 @@ def _fmt(value, prefix: str = "$") -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="S-RIM / PEG / DCF 복합 적정주가 계산")
     parser.add_argument("tickers", nargs="+", help="미국 개별 주식 티커 (예: AAPL MSFT)")
+    parser.add_argument(
+        "--provider",
+        choices=available_providers(),
+        default=DEFAULT_PROVIDER,
+        help=f"데이터 소스 (기본 {DEFAULT_PROVIDER})",
+    )
     parser.add_argument("--risk-free", type=float, default=0.043, help="무위험수익률 (기본 0.043)")
     parser.add_argument("--erp", type=float, default=0.05, help="주식 위험 프리미엄 (기본 0.05)")
     parser.add_argument("--terminal-growth", type=float, default=0.025, help="영구 성장률 (기본 0.025)")
@@ -45,16 +52,21 @@ def main(argv: list[str] | None = None) -> int:
         discount_rate_override=args.discount_rate,
     )
 
+    provider = get_provider(args.provider)
     results = []
     header = f"{'티커':<8}{'시장가':>12}{'DCF':>12}{'S-RIM':>12}{'PEG':>12}{'복합적정가':>14}{'괴리율':>10}  신호"
+    print(f"데이터 소스: {provider.name}")
     print(header)
     print("-" * len(header.expandtabs()))
 
     for ticker in args.tickers:
         try:
-            inputs = fetch_inputs(ticker)
-        except ValueError as exc:
+            inputs = provider.fetch_inputs(ticker)
+        except (ValueError, ConnectionError) as exc:
             print(f"{ticker.upper():<8}  {exc}")
+            continue
+        except Exception as exc:
+            print(f"{ticker.upper():<8}  데이터 수집 실패 ({type(exc).__name__}: {exc})")
             continue
         result = evaluate(inputs, assumptions)
         results.append(result)
