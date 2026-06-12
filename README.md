@@ -24,6 +24,7 @@ pip install -r requirements.txt
 
 ```bash
 python -m valuation.cli AAPL MSFT GOOGL
+python -m valuation.cli NVDA --provider tradingview        # TradingView 스캐너 사용
 python -m valuation.cli NVDA --risk-free 0.045 --terminal-growth 0.03 --srim-w 0.9
 python -m valuation.cli AAPL MSFT --save   # data/history.csv에 일별 스냅샷 누적
 ```
@@ -70,9 +71,34 @@ streamlit run app.py
 | +10% ~ +20% | 🟡 프리미엄 | 성장 기대 선반영 |
 | > +20% | 🔴 과열 경고 | 심리적 프리미엄 과다 — 신규 진입 자제 / 부분 익절 검토 |
 
-## 데이터 출처 및 검증 원칙
+## 데이터 소스 (프로바이더 추상화)
 
-- **출처**: 야후 파이낸스(`yfinance`) — 원천은 SEC EDGAR 10-K/10-Q 공시. 무료.
+데이터 수집은 `DataProvider` 인터페이스로 추상화되어 있어 소스를 자유롭게
+교체·추가할 수 있습니다. CLI는 `--provider`, 대시보드는 사이드바에서 선택합니다.
+
+| 프로바이더 | 펀더멘털 | 가격 이력 | 과거 재무(궤적 차트) | 비고 |
+|-----------|:---:|:---:|:---:|------|
+| `yahoo` (기본) | ✅ | ✅ | ✅ (4개년) | yfinance, 원천 SEC EDGAR |
+| `tradingview` | ✅ | ❌ | ❌ | 스캐너 API, 최신 스냅샷만. `NASDAQ:AAPL` 프리픽스 지정 가능 |
+| `kiwoom` | 템플릿 | — | — | Windows 32bit 전용 — `valuation/providers/kiwoom.py`의 골격 참고 |
+
+새 소스 추가는 세 단계면 됩니다:
+
+```python
+from valuation.providers import register_provider
+from valuation.providers.base import DataProvider
+
+class MyProvider(DataProvider):
+    name = "mysource"
+
+    def fetch_inputs(self, ticker):  # 필수
+        ...  # CompanyInputs 반환 (없는 항목은 None — 모델이 자동 제외)
+
+register_provider(MyProvider)  # CLI/대시보드에 즉시 노출
+```
+
+## 데이터 검증 원칙
+
 - **완전 희석 주식수 우선**: 스톡옵션·전환사채 희석 효과를 반영해 고평가 오류 방지.
 - **ROE 함정 주의**: 자산 매각 등 일회성 이익으로 ROE가 급등한 종목은 별도 확인 필요.
 - **적용 범위**: 자체 현금 창출력이 검증된 **미국 개별 주식 한정**. ETF·적자 바이오텍·
@@ -91,12 +117,16 @@ streamlit run app.py
 
 ```
 valuation/
-├── models.py    # DCF / S-RIM / PEG 순수 계산 로직 + 복합 적정주가 + 민감도
-├── data.py      # yfinance 데이터 수집 (완전 희석 주식수, ETF 거부 등 검증 포함)
-├── tracker.py   # 일별 괴리율 스냅샷 CSV 저장소
-└── cli.py       # 커맨드라인 계산기
-app.py           # Streamlit 대시보드
-tests/           # 모델 계산 로직 단위 테스트 (네트워크 불필요)
+├── models.py          # DCF / S-RIM / PEG 순수 계산 로직 + 복합 적정주가 + 민감도
+├── providers/
+│   ├── base.py        # DataProvider 추상 인터페이스 (새 소스 연동 지점)
+│   ├── yahoo.py       # 야후 파이낸스 구현 (기본)
+│   ├── tradingview.py # TradingView 스캐너 구현
+│   └── kiwoom.py      # 키움증권 Open API+ 연동 템플릿 (Windows 전용, 미구현)
+├── tracker.py         # 일별 괴리율 스냅샷 CSV 저장소
+└── cli.py             # 커맨드라인 계산기 (--provider로 소스 선택)
+app.py                 # Streamlit 대시보드 (사이드바에서 소스 선택)
+tests/                 # 모델·프로바이더 단위 테스트 (네트워크 불필요)
 ```
 
 테스트 실행: `pytest`
@@ -104,6 +134,6 @@ tests/           # 모델 계산 로직 단위 테스트 (네트워크 불필요
 ## 확장 로드맵
 
 - 키움증권 Open API+(`pykiwoom`, Windows 32bit Python 필요) 연동으로 보유 종목·매수
-  단가 자동 동기화 → 현재는 CSV 업로드로 대체
+  단가 자동 동기화 → `valuation/providers/kiwoom.py` 템플릿 참고, 현재는 CSV 업로드로 대체
 - PostgreSQL + FastAPI + Airflow 기반 수집 파이프라인 고도화
 - 거래 기록(Trade Log) 타임라인 마커 차트
