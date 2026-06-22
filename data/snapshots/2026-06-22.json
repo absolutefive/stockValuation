@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-06-22",
-  "generated_at": "2026-06-22T14:56:46.069356+00:00",
+  "generated_at": "2026-06-22T15:09:38.645227+00:00",
   "provider": "yahoo",
   "assumptions": {
     "risk_free_rate": 0.043,
@@ -20,18 +20,18 @@
       "market": "US",
       "name": "Apple",
       "currency": "USD",
-      "price": 299.93,
+      "price": 299.17,
       "valuation": {
         "dcf": 206.43919490998437,
         "srim": 71.44786028868914,
         "peg": 179.85,
         "composite": 152.57901839955784,
-        "discrepancy_pct": 96.5735545726051,
+        "discrepancy_pct": 96.07545201042333,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "AAPL",
-        "price": 299.93,
+        "price": 299.17,
         "shares_outstanding": 15004697000.0,
         "fcf": 101090746368.0,
         "cash": 68507000832.0,
@@ -49,40 +49,36 @@
       "error": null
     },
     {
-      "ticker": "TLSA",
+      "ticker": "TSLA",
       "market": "US",
       "name": "Tesla",
       "currency": "USD",
-      "price": 1.13,
+      "price": 409.06,
       "valuation": {
-        "dcf": null,
-        "srim": null,
-        "peg": null,
-        "composite": null,
-        "discrepancy_pct": null,
-        "signal": "판단불가"
+        "dcf": 25.996545102022324,
+        "srim": 8.589847603790659,
+        "peg": 8.964000000000002,
+        "composite": 14.516797568604327,
+        "discrepancy_pct": 2717.839114080364,
+        "signal": "과열 경고"
       },
       "inputs": {
-        "ticker": "TLSA",
-        "price": 1.13,
-        "shares_outstanding": 118282753.0,
-        "fcf": -5476750.0,
-        "cash": 4010000.0,
-        "total_debt": 456000.0,
-        "book_value": 52000.0,
-        "roe": -9.24323,
-        "eps": -0.16,
-        "eps_growth": null,
+        "ticker": "TSLA",
+        "price": 409.06,
+        "shares_outstanding": 3526250000.0,
+        "fcf": 5251999744.0,
+        "cash": 44743000064.0,
+        "total_debt": 15889999872.0,
+        "book_value": 82137000000.0,
+        "roe": 0.04901,
+        "eps": 1.08,
+        "eps_growth": 0.083,
         "fcf_growth": null,
-        "beta": 0.424,
-        "name": "Tiziana Life Sciences Ltd",
+        "beta": 1.798,
+        "name": "Tesla, Inc.",
         "currency": "USD"
       },
-      "notes": [
-        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
-        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
-        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
-      ],
+      "notes": [],
       "error": null
     },
     {
@@ -90,18 +86,18 @@
       "market": "US",
       "name": "Palantir",
       "currency": "USD",
-      "price": 122.75,
+      "price": 122.365,
       "valuation": {
         "dcf": 20.881882623008547,
         "srim": 7.902670852746449,
         "peg": 44.5,
         "composite": 24.42818449191833,
-        "discrepancy_pct": 402.49333936629574,
+        "discrepancy_pct": 400.91729101064584,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "PLTR",
-        "price": 122.75,
+        "price": 122.365,
         "shares_outstanding": 2565197000.0,
         "fcf": 1752997120.0,
         "cash": 8026413056.0,
@@ -119,36 +115,295 @@
       "error": null
     },
     {
-      "ticker": "NVDA",
+      "ticker": "SATL",
       "market": "US",
-      "name": "Nvidia",
+      "name": "Sattlelogic",
       "currency": "USD",
-      "price": 209.106,
+      "price": 5.6023,
       "valuation": {
-        "dcf": 36.405054190376966,
-        "srim": 47.89836134640293,
-        "peg": 326.5,
-        "composite": 136.9344718455933,
-        "discrepancy_pct": 52.70515684011766,
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "SATL",
+        "price": 5.6023,
+        "shares_outstanding": 134134266.0,
+        "fcf": -16684750.0,
+        "cash": 121885000.0,
+        "total_debt": 149708992.0,
+        "book_value": 60526000.0,
+        "roe": -0.079023890559429,
+        "eps": -0.68,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 1.197,
+        "name": "Satellogic Inc.",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "COIN",
+      "market": "US",
+      "name": "Coinbase",
+      "currency": "USD",
+      "price": 166.3932,
+      "valuation": {
+        "dcf": 110.1575881673998,
+        "srim": 16.4770705526764,
+        "peg": 136.5,
+        "composite": 87.71155290669206,
+        "discrepancy_pct": 89.70499835638508,
         "signal": "과열 경고"
       },
       "inputs": {
-        "ticker": "NVDA",
-        "price": 209.106,
-        "shares_outstanding": 24514000000.0,
-        "fcf": 46335873024.0,
-        "cash": 53171998720.0,
-        "total_debt": 12814000128.0,
-        "book_value": 157293000000.0,
-        "roe": 1.14288,
-        "eps": 6.53,
-        "eps_growth": 2.145,
+        "ticker": "COIN",
+        "price": 166.3932,
+        "shares_outstanding": 287209000.0,
+        "fcf": 2407562752.0,
+        "cash": 10438001664.0,
+        "total_debt": 7964423168.0,
+        "book_value": 14793058000.0,
+        "roe": 0.06686,
+        "eps": 2.73,
+        "eps_growth": 0.7210073260073258,
         "fcf_growth": null,
-        "beta": 2.202,
-        "name": "NVIDIA Corporation",
+        "beta": 3.32,
+        "name": "Coinbase Global, Inc.",
         "currency": "USD"
       },
       "notes": [],
+      "error": null
+    },
+    {
+      "ticker": "JOBY",
+      "market": "US",
+      "name": "Joby",
+      "currency": "USD",
+      "price": 9.8899,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "JOBY",
+        "price": 9.8899,
+        "shares_outstanding": 826240955.0,
+        "fcf": -380630368.0,
+        "cash": 2466189056.0,
+        "total_debt": 747726016.0,
+        "book_value": 1409713000.0,
+        "roe": -0.67968005,
+        "eps": -1.14,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 2.669,
+        "name": "Joby Aviation, Inc.",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "BKKT",
+      "market": "US",
+      "name": "Bakkt",
+      "currency": "USD",
+      "price": 8.94,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "BKKT",
+        "price": 8.94,
+        "shares_outstanding": 25523039.0,
+        "fcf": -11740250.0,
+        "cash": 81899000.0,
+        "total_debt": 79000.0,
+        "book_value": 112782000.0,
+        "roe": -1.01963,
+        "eps": -8.37,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 5.857,
+        "name": "Bakkt, Inc.",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "ABCL",
+      "market": "US",
+      "name": "abcellera",
+      "currency": "USD",
+      "price": 5.7,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "ABCL",
+        "price": 5.7,
+        "shares_outstanding": 298707082.0,
+        "fcf": -114039248.0,
+        "cash": 504732000.0,
+        "total_debt": 140178000.0,
+        "book_value": 966904000.0,
+        "roe": -0.14681,
+        "eps": -0.48,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 1.197,
+        "name": "AbCellera Biologics Inc.",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "MSTR",
+      "market": "US",
+      "name": "Microstrategy",
+      "currency": "USD",
+      "price": 113.72,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "MSTR",
+        "price": 113.72,
+        "shares_outstanding": 277660000.0,
+        "fcf": -8699502592.0,
+        "cash": 2207218944.0,
+        "total_debt": 8257384960.0,
+        "book_value": 51042972000.0,
+        "roe": -0.30756,
+        "eps": -36.99,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 3.471,
+        "name": "Strategy Inc",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "TLRY",
+      "market": "US",
+      "name": "Tilley",
+      "currency": "USD",
+      "price": 4.72,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "TLRY",
+        "price": 4.72,
+        "shares_outstanding": 89032601.0,
+        "fcf": -31062250.0,
+        "cash": 425655008.0,
+        "total_debt": 343899008.0,
+        "book_value": 1511474000.0,
+        "roe": -0.63161,
+        "eps": -14.63,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 1.875,
+        "name": "Tilray Brands, Inc.",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "SMR",
+      "market": "US",
+      "name": "Smr",
+      "currency": "USD",
+      "price": 11.575,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "SMR",
+        "price": 11.575,
+        "shares_outstanding": 163731673.0,
+        "fcf": -161970368.0,
+        "cash": 890129024.0,
+        "total_debt": 5683000.0,
+        "book_value": 1168841000.0,
+        "roe": -0.8305,
+        "eps": -2.2,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 2.219,
+        "name": "NuScale Power Corporation",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
       "error": null
     },
     {
@@ -231,6 +486,145 @@
         "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
       ],
       "error": null
+    },
+    {
+      "ticker": "138080.KS",
+      "market": "KR",
+      "name": "오이솔루션",
+      "currency": null,
+      "price": null,
+      "valuation": null,
+      "inputs": null,
+      "notes": [],
+      "error": "ValueError: 138080.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
+    },
+    {
+      "ticker": "018260.KS",
+      "market": "KR",
+      "name": "삼성에스디에스",
+      "currency": "KRW",
+      "price": 208500.0,
+      "valuation": {
+        "dcf": 134183.1316515683,
+        "srim": 81972.64891068227,
+        "peg": null,
+        "composite": 108077.89028112529,
+        "discrepancy_pct": 92.9164230146084,
+        "signal": "과열 경고"
+      },
+      "inputs": {
+        "ticker": "018260.KS",
+        "price": 208500.0,
+        "shares_outstanding": 77353988.0,
+        "fcf": 608246824960.0,
+        "cash": 6605318914048.0,
+        "total_debt": 843430494208.0,
+        "book_value": 9916106572210.0,
+        "roe": 0.065799996,
+        "eps": null,
+        "eps_growth": -0.563,
+        "fcf_growth": null,
+        "beta": 1.198,
+        "name": "SAMSUNG SDS",
+        "currency": "KRW"
+      },
+      "notes": [
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "304100.KS",
+      "market": "KR",
+      "name": "솔트룩스",
+      "currency": null,
+      "price": null,
+      "valuation": null,
+      "inputs": null,
+      "notes": [],
+      "error": "ValueError: 304100.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
+    },
+    {
+      "ticker": "011200.KS",
+      "market": "KR",
+      "name": "HMM",
+      "currency": "KRW",
+      "price": 19550.0,
+      "valuation": {
+        "dcf": null,
+        "srim": 17030.590591197983,
+        "peg": null,
+        "composite": 17030.590591197983,
+        "discrepancy_pct": 14.793435349823616,
+        "signal": "프리미엄"
+      },
+      "inputs": {
+        "ticker": "011200.KS",
+        "price": 19550.0,
+        "shares_outstanding": 1001298507.0,
+        "fcf": -374964387840.0,
+        "cash": 12880659349504.0,
+        "total_debt": 5722512818176.0,
+        "book_value": 26569235000000.0,
+        "roe": 0.05356,
+        "eps": null,
+        "eps_growth": -0.48,
+        "fcf_growth": null,
+        "beta": 0.809,
+        "name": "HMM",
+        "currency": "KRW"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "010140.KS",
+      "market": "KR",
+      "name": "삼성중공업",
+      "currency": "KRW",
+      "price": 26200.0,
+      "valuation": {
+        "dcf": 71452.74007167069,
+        "srim": 6893.9186555711485,
+        "peg": null,
+        "composite": 39173.32936362092,
+        "discrepancy_pct": -33.11776041091073,
+        "signal": "강한 저평가"
+      },
+      "inputs": {
+        "ticker": "010140.KS",
+        "price": 26200.0,
+        "shares_outstanding": 853739596.0,
+        "fcf": 2920756019200.0,
+        "cash": 1714208636928.0,
+        "total_debt": 1457062936576.0,
+        "book_value": 4148939309640.0,
+        "roe": 0.13207,
+        "eps": null,
+        "eps_growth": 0.102,
+        "fcf_growth": null,
+        "beta": 1.002,
+        "name": "SamsungHvyInd",
+        "currency": "KRW"
+      },
+      "notes": [
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "393210.KS",
+      "market": "KR",
+      "name": "토마토시스템",
+      "currency": null,
+      "price": null,
+      "valuation": null,
+      "inputs": null,
+      "notes": [],
+      "error": "ValueError: 393210.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
     }
   ]
 }
