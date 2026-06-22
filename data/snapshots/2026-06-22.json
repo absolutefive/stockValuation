@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-06-22",
-  "generated_at": "2026-06-22T15:09:38.645227+00:00",
+  "generated_at": "2026-06-22T15:20:45.832936+00:00",
   "provider": "yahoo",
   "assumptions": {
     "risk_free_rate": 0.043,
@@ -20,18 +20,18 @@
       "market": "US",
       "name": "Apple",
       "currency": "USD",
-      "price": 299.17,
+      "price": 299.805,
       "valuation": {
         "dcf": 206.43919490998437,
         "srim": 71.44786028868914,
         "peg": 179.85,
         "composite": 152.57901839955784,
-        "discrepancy_pct": 96.07545201042333,
+        "discrepancy_pct": 96.49162980908837,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "AAPL",
-        "price": 299.17,
+        "price": 299.805,
         "shares_outstanding": 15004697000.0,
         "fcf": 101090746368.0,
         "cash": 68507000832.0,
@@ -53,18 +53,18 @@
       "market": "US",
       "name": "Tesla",
       "currency": "USD",
-      "price": 409.06,
+      "price": 410.0225,
       "valuation": {
         "dcf": 25.996545102022324,
         "srim": 8.589847603790659,
         "peg": 8.964000000000002,
         "composite": 14.516797568604327,
-        "discrepancy_pct": 2717.839114080364,
+        "discrepancy_pct": 2724.469364281563,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "TSLA",
-        "price": 409.06,
+        "price": 410.0225,
         "shares_outstanding": 3526250000.0,
         "fcf": 5251999744.0,
         "cash": 44743000064.0,
@@ -86,18 +86,18 @@
       "market": "US",
       "name": "Palantir",
       "currency": "USD",
-      "price": 122.365,
+      "price": 122.48,
       "valuation": {
         "dcf": 20.881882623008547,
         "srim": 7.902670852746449,
         "peg": 44.5,
         "composite": 24.42818449191833,
-        "discrepancy_pct": 400.91729101064584,
+        "discrepancy_pct": 401.38805870129454,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "PLTR",
-        "price": 122.365,
+        "price": 122.48,
         "shares_outstanding": 2565197000.0,
         "fcf": 1752997120.0,
         "cash": 8026413056.0,
@@ -119,7 +119,7 @@
       "market": "US",
       "name": "Sattlelogic",
       "currency": "USD",
-      "price": 5.6023,
+      "price": 5.4995,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -130,7 +130,7 @@
       },
       "inputs": {
         "ticker": "SATL",
-        "price": 5.6023,
+        "price": 5.4995,
         "shares_outstanding": 134134266.0,
         "fcf": -16684750.0,
         "cash": 121885000.0,
@@ -156,18 +156,18 @@
       "market": "US",
       "name": "Coinbase",
       "currency": "USD",
-      "price": 166.3932,
+      "price": 165.8216,
       "valuation": {
         "dcf": 110.1575881673998,
         "srim": 16.4770705526764,
         "peg": 136.5,
         "composite": 87.71155290669206,
-        "discrepancy_pct": 89.70499835638508,
+        "discrepancy_pct": 89.05331681494881,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "COIN",
-        "price": 166.3932,
+        "price": 165.8216,
         "shares_outstanding": 287209000.0,
         "fcf": 2407562752.0,
         "cash": 10438001664.0,
@@ -189,7 +189,7 @@
       "market": "US",
       "name": "Joby",
       "currency": "USD",
-      "price": 9.8899,
+      "price": 9.8593,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -200,7 +200,7 @@
       },
       "inputs": {
         "ticker": "JOBY",
-        "price": 9.8899,
+        "price": 9.8593,
         "shares_outstanding": 826240955.0,
         "fcf": -380630368.0,
         "cash": 2466189056.0,
@@ -226,7 +226,7 @@
       "market": "US",
       "name": "Bakkt",
       "currency": "USD",
-      "price": 8.94,
+      "price": 8.86,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -237,7 +237,7 @@
       },
       "inputs": {
         "ticker": "BKKT",
-        "price": 8.94,
+        "price": 8.86,
         "shares_outstanding": 25523039.0,
         "fcf": -11740250.0,
         "cash": 81899000.0,
@@ -263,7 +263,7 @@
       "market": "US",
       "name": "abcellera",
       "currency": "USD",
-      "price": 5.7,
+      "price": 5.685,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -274,7 +274,7 @@
       },
       "inputs": {
         "ticker": "ABCL",
-        "price": 5.7,
+        "price": 5.685,
         "shares_outstanding": 298707082.0,
         "fcf": -114039248.0,
         "cash": 504732000.0,
@@ -300,7 +300,7 @@
       "market": "US",
       "name": "Microstrategy",
       "currency": "USD",
-      "price": 113.72,
+      "price": 113.425,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -311,7 +311,7 @@
       },
       "inputs": {
         "ticker": "MSTR",
-        "price": 113.72,
+        "price": 113.425,
         "shares_outstanding": 277660000.0,
         "fcf": -8699502592.0,
         "cash": 2207218944.0,
@@ -337,7 +337,7 @@
       "market": "US",
       "name": "Tilley",
       "currency": "USD",
-      "price": 4.72,
+      "price": 4.73,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -348,7 +348,7 @@
       },
       "inputs": {
         "ticker": "TLRY",
-        "price": 4.72,
+        "price": 4.73,
         "shares_outstanding": 89032601.0,
         "fcf": -31062250.0,
         "cash": 425655008.0,
@@ -374,7 +374,7 @@
       "market": "US",
       "name": "Smr",
       "currency": "USD",
-      "price": 11.575,
+      "price": 11.4799,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -385,7 +385,7 @@
       },
       "inputs": {
         "ticker": "SMR",
-        "price": 11.575,
+        "price": 11.4799,
         "shares_outstanding": 163731673.0,
         "fcf": -161970368.0,
         "cash": 890129024.0,
@@ -442,15 +442,41 @@
       "error": null
     },
     {
-      "ticker": "078160.KS",
+      "ticker": "078160.KQ",
       "market": "KR",
       "name": "메디포스트",
-      "currency": null,
-      "price": null,
-      "valuation": null,
-      "inputs": null,
-      "notes": [],
-      "error": "ValueError: 078160.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
+      "currency": "KRW",
+      "price": 9170.0,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "078160.KQ",
+        "price": 9170.0,
+        "shares_outstanding": 35464291.0,
+        "fcf": -60422748780.0,
+        "cash": 78033844430.0,
+        "total_debt": 40399350000.0,
+        "book_value": 249019175330.0,
+        "roe": -0.3429374942585471,
+        "eps": null,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 1.0,
+        "name": "MEDIPOST",
+        "currency": "KRW"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
     },
     {
       "ticker": "035420.KS",
@@ -488,15 +514,41 @@
       "error": null
     },
     {
-      "ticker": "138080.KS",
+      "ticker": "138080.KQ",
       "market": "KR",
       "name": "오이솔루션",
-      "currency": null,
-      "price": null,
-      "valuation": null,
-      "inputs": null,
-      "notes": [],
-      "error": "ValueError: 138080.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
+      "currency": "KRW",
+      "price": 27850.0,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "138080.KQ",
+        "price": 27850.0,
+        "shares_outstanding": 10234371.0,
+        "fcf": -12878772370.0,
+        "cash": 28718265910.0,
+        "total_debt": 37217360000.0,
+        "book_value": 64276618320.0,
+        "roe": -0.4206694425861949,
+        "eps": null,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 1.0,
+        "name": "OE Solutions",
+        "currency": "KRW"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
     },
     {
       "ticker": "018260.KS",
@@ -534,15 +586,40 @@
       "error": null
     },
     {
-      "ticker": "304100.KS",
+      "ticker": "304100.KQ",
       "market": "KR",
       "name": "솔트룩스",
-      "currency": null,
-      "price": null,
-      "valuation": null,
-      "inputs": null,
-      "notes": [],
-      "error": "ValueError: 304100.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
+      "currency": "KRW",
+      "price": 14010.0,
+      "valuation": {
+        "dcf": 11823.876630336335,
+        "srim": null,
+        "peg": null,
+        "composite": 11823.876630336335,
+        "discrepancy_pct": 18.48905767550688,
+        "signal": "프리미엄"
+      },
+      "inputs": {
+        "ticker": "304100.KQ",
+        "price": 14010.0,
+        "shares_outstanding": 12259858.0,
+        "fcf": 9757077504.0,
+        "cash": 48470130688.0,
+        "total_debt": 10817996800.0,
+        "book_value": 70522867330.0,
+        "roe": -0.15901,
+        "eps": null,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 1.504,
+        "name": "SALTLUX",
+        "currency": "KRW"
+      },
+      "notes": [
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
     },
     {
       "ticker": "011200.KS",
@@ -616,15 +693,41 @@
       "error": null
     },
     {
-      "ticker": "393210.KS",
+      "ticker": "393210.KQ",
       "market": "KR",
       "name": "토마토시스템",
-      "currency": null,
-      "price": null,
-      "valuation": null,
-      "inputs": null,
-      "notes": [],
-      "error": "ValueError: 393210.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
+      "currency": "KRW",
+      "price": 2635.0,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "393210.KQ",
+        "price": 2635.0,
+        "shares_outstanding": 15639357.0,
+        "fcf": -24097324900.0,
+        "cash": 1656098350.0,
+        "total_debt": 22114956110.0,
+        "book_value": 25886318170.0,
+        "roe": -0.07733187959962404,
+        "eps": null,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 1.0,
+        "name": "TOMATOSYSTEM",
+        "currency": "KRW"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
     }
   ]
 }
