@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "date": "2026-06-22",
+  "generated_at": "2026-06-22T14:56:46.069356+00:00",
+  "provider": "yahoo",
+  "assumptions": {
+    "risk_free_rate": 0.043,
+    "equity_risk_premium": 0.05,
+    "projection_years": 5,
+    "terminal_growth": 0.025,
+    "fcf_growth_cap": 0.25,
+    "fair_peg": 1.0,
+    "peg_growth_cap": 0.5,
+    "srim_persistence": 1.0,
+    "discount_rate_override": null
+  },
+  "records": [
+    {
+      "ticker": "AAPL",
+      "market": "US",
+      "name": "Apple",
+      "currency": "USD",
+      "price": 299.93,
+      "valuation": {
+        "dcf": 206.43919490998437,
+        "srim": 71.44786028868914,
+        "peg": 179.85,
+        "composite": 152.57901839955784,
+        "discrepancy_pct": 96.5735545726051,
+        "signal": "과열 경고"
+      },
+      "inputs": {
+        "ticker": "AAPL",
+        "price": 299.93,
+        "shares_outstanding": 15004697000.0,
+        "fcf": 101090746368.0,
+        "cash": 68507000832.0,
+        "total_debt": 84710998016.0,
+        "book_value": 73733000000.0,
+        "roe": 1.4147099,
+        "eps": 8.25,
+        "eps_growth": 0.218,
+        "fcf_growth": null,
+        "beta": 1.086,
+        "name": "Apple Inc.",
+        "currency": "USD"
+      },
+      "notes": [],
+      "error": null
+    },
+    {
+      "ticker": "TLSA",
+      "market": "US",
+      "name": "Tesla",
+      "currency": "USD",
+      "price": 1.13,
+      "valuation": {
+        "dcf": null,
+        "srim": null,
+        "peg": null,
+        "composite": null,
+        "discrepancy_pct": null,
+        "signal": "판단불가"
+      },
+      "inputs": {
+        "ticker": "TLSA",
+        "price": 1.13,
+        "shares_outstanding": 118282753.0,
+        "fcf": -5476750.0,
+        "cash": 4010000.0,
+        "total_debt": 456000.0,
+        "book_value": 52000.0,
+        "roe": -9.24323,
+        "eps": -0.16,
+        "eps_growth": null,
+        "fcf_growth": null,
+        "beta": 0.424,
+        "name": "Tiziana Life Sciences Ltd",
+        "currency": "USD"
+      },
+      "notes": [
+        "DCF 미적용 (FCF 적자 또는 데이터 부족)",
+        "S-RIM 미적용 (자본총계/ROE 데이터 부족)",
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "PLTR",
+      "market": "US",
+      "name": "Palantir",
+      "currency": "USD",
+      "price": 122.75,
+      "valuation": {
+        "dcf": 20.881882623008547,
+        "srim": 7.902670852746449,
+        "peg": 44.5,
+        "composite": 24.42818449191833,
+        "discrepancy_pct": 402.49333936629574,
+        "signal": "과열 경고"
+      },
+      "inputs": {
+        "ticker": "PLTR",
+        "price": 122.75,
+        "shares_outstanding": 2565197000.0,
+        "fcf": 1752997120.0,
+        "cash": 8026413056.0,
+        "total_debt": 211976992.0,
+        "book_value": 7387268000.0,
+        "roe": 0.32587,
+        "eps": 0.89,
+        "eps_growth": 3.25,
+        "fcf_growth": null,
+        "beta": 1.515,
+        "name": "Palantir Technologies Inc.",
+        "currency": "USD"
+      },
+      "notes": [],
+      "error": null
+    },
+    {
+      "ticker": "NVDA",
+      "market": "US",
+      "name": "Nvidia",
+      "currency": "USD",
+      "price": 209.106,
+      "valuation": {
+        "dcf": 36.405054190376966,
+        "srim": 47.89836134640293,
+        "peg": 326.5,
+        "composite": 136.9344718455933,
+        "discrepancy_pct": 52.70515684011766,
+        "signal": "과열 경고"
+      },
+      "inputs": {
+        "ticker": "NVDA",
+        "price": 209.106,
+        "shares_outstanding": 24514000000.0,
+        "fcf": 46335873024.0,
+        "cash": 53171998720.0,
+        "total_debt": 12814000128.0,
+        "book_value": 157293000000.0,
+        "roe": 1.14288,
+        "eps": 6.53,
+        "eps_growth": 2.145,
+        "fcf_growth": null,
+        "beta": 2.202,
+        "name": "NVIDIA Corporation",
+        "currency": "USD"
+      },
+      "notes": [],
+      "error": null
+    },
+    {
+      "ticker": "005930.KS",
+      "market": "KR",
+      "name": "삼성전자",
+      "currency": "KRW",
+      "price": 353500.0,
+      "valuation": {
+        "dcf": 285289.8185058266,
+        "srim": 101706.93078498112,
+        "peg": null,
+        "composite": 193498.37464540385,
+        "discrepancy_pct": 82.6888730449585,
+        "signal": "과열 경고"
+      },
+      "inputs": {
+        "ticker": "005930.KS",
+        "price": 353500.0,
+        "shares_outstanding": 6703158564.0,
+        "fcf": 67568203202560.0,
+        "cash": 147378078220288.0,
+        "total_debt": 28138794909696.0,
+        "book_value": 424313255000000.0,
+        "roe": 0.18855,
+        "eps": null,
+        "eps_growth": 4.921,
+        "fcf_growth": null,
+        "beta": 1.487,
+        "name": "SamsungElec",
+        "currency": "KRW"
+      },
+      "notes": [
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    },
+    {
+      "ticker": "078160.KS",
+      "market": "KR",
+      "name": "메디포스트",
+      "currency": null,
+      "price": null,
+      "valuation": null,
+      "inputs": null,
+      "notes": [],
+      "error": "ValueError: 078160.KS는 MUTUALFUND입니다. 본 템플릿은 자체 현금 창출력을 지닌 미국 개별 주식에만 적용할 수 있습니다."
+    },
+    {
+      "ticker": "035420.KS",
+      "market": "KR",
+      "name": "NAVER",
+      "currency": "KRW",
+      "price": 222000.0,
+      "valuation": {
+        "dcf": 100099.93708413135,
+        "srim": 104568.59320498697,
+        "peg": null,
+        "composite": 102334.26514455916,
+        "discrepancy_pct": 116.93613540528088,
+        "signal": "과열 경고"
+      },
+      "inputs": {
+        "ticker": "035420.KS",
+        "price": 222000.0,
+        "shares_outstanding": 151329878.0,
+        "fcf": 1456902111232.0,
+        "cash": 8963419537408.0,
+        "total_debt": 5310200152064.0,
+        "book_value": 27581956984240.0,
+        "roe": 0.0572,
+        "eps": null,
+        "eps_growth": -0.322,
+        "fcf_growth": null,
+        "beta": 1.134,
+        "name": "NAVER",
+        "currency": "KRW"
+      },
+      "notes": [
+        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)"
+      ],
+      "error": null
+    }
+  ]
+}
