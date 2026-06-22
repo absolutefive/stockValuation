@@ -1,0 +1,48 @@
+# ============================================================================
+# 수집 대상 티커 등록 파일
+# ============================================================================
+# 매일 데이터를 수집할 종목을 여기에 등록합니다. (한국/미국 시장만 지원)
+#
+# market 값:
+#   US — 미국 시장. 일반 심볼을 그대로 사용 (예: AAPL, MSFT, GOOGL)
+#   KR — 한국 시장. 종목코드 + 접미사 사용
+#        .KS = 코스피(KOSPI),  .KQ = 코스닥(KOSDAQ)
+#        예: 005930.KS (삼성전자), 035720.KS (카카오), 247540.KQ (에코프로비엠)
+#
+# name 은 선택 사항입니다. 비워두면 데이터 소스가 제공하는 이름을 사용합니다.
+# ----------------------------------------------------------------------------
+
+# 데이터 소스: yahoo (기본) | tradingview
+provider: yahoo
+
+# (선택) 밸류에이션 가정 재정의. 생략 시 기본값 사용.
+# assumptions:
+#   risk_free_rate: 0.043
+#   terminal_growth: 0.025
+#   fair_peg: 1.0
+
+tickers:
+  # ---- 미국 시장 (US) ----
+  - symbol: AAPL
+    market: US
+    name: Apple
+  - symbol: MSFT
+    market: US
+    name: Microsoft
+  - symbol: GOOGL
+    market: US
+    name: Alphabet
+  - symbol: NVDA
+    market: US
+    name: Nvidia
+
+  # ---- 한국 시장 (KR) ----
+  - symbol: 005930.KS
+    market: KR
+    name: 삼성전자
+  - symbol: 000660.KS
+    market: KR
+    name: SK하이닉스
+  - symbol: 035420.KS
+    market: KR
+    name: NAVER

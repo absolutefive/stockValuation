@@ -1,0 +1,71 @@
+name: 일별 데이터 수집 및 보고서
+
+# 매일 watchlist 종목의 데이터를 수집해 data/snapshots/ 에 누적하고,
+# HTML 보고서를 생성해 GitHub Pages로 배포한다.
+
+on:
+  schedule:
+    # UTC 22:00 (월~금) = 한국 시각 익일 07:00. 한·미 양 시장 마감 이후.
+    # 참고: 예약 워크플로우는 기본 브랜치(main)에서만 동작한다.
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch: {}  # 수동 실행 (아무 브랜치에서나 가능)
+
+# 동시 실행 방지 (커밋 충돌 예방)
+concurrency:
+  group: daily-collect
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # data/snapshots 커밋
+  pages: write      # GitHub Pages 배포
+  id-token: write   # Pages 배포 인증
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 파이썬 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 데이터 수집
+        run: python -m valuation.collector
+
+      - name: 보고서 생성
+        run: python -m valuation.report
+
+      - name: 스냅샷 커밋
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/snapshots
+          if git diff --cached --quiet; then
+            echo "변경된 스냅샷 없음 — 커밋 생략"
+          else
+            git commit -m "chore: $(date -u +%Y-%m-%d) 데이터 수집 스냅샷"
+            git push
+          fi
+
+      - name: Pages 아티팩트 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: collect
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages 배포
+        id: deployment
+        uses: actions/deploy-pages@v4
