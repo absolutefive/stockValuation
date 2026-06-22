@@ -26,12 +26,12 @@ tickers:
   - symbol: AAPL
     market: US
     name: Apple
-  - symbol: MSFT
+  - symbol: TLSA
     market: US
-    name: Microsoft
-  - symbol: GOOGL
+    name: Tesla
+  - symbol: PLTR
     market: US
-    name: Alphabet
+    name: Palantir
   - symbol: NVDA
     market: US
     name: Nvidia
@@ -40,9 +40,9 @@ tickers:
   - symbol: 005930.KS
     market: KR
     name: 삼성전자
-  - symbol: 000660.KS
+  - symbol: 078160.KS
     market: KR
-    name: SK하이닉스
+    name: 메디포스트
   - symbol: 035420.KS
     market: KR
     name: NAVER
