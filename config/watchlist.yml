@@ -61,19 +61,19 @@ tickers:
   - symbol: 005930.KS
     market: KR
     name: 삼성전자
-  - symbol: 078160.KS
+  - symbol: 078160.KQ
     market: KR
     name: 메디포스트
   - symbol: 035420.KS
     market: KR
     name: NAVER
-  - symbol: 138080.KS
+  - symbol: 138080.KQ
     market: KR
     name: 오이솔루션  
   - symbol: 018260.KS
     market: KR
     name: 삼성에스디에스  
-  - symbol: 304100.KS
+  - symbol: 304100.KQ
     market: KR
     name: 솔트룩스  
   - symbol: 011200.KS
@@ -82,6 +82,6 @@ tickers:
   - symbol: 010140.KS
     market: KR
     name: 삼성중공업  
-  - symbol: 393210.KS
+  - symbol: 393210.KQ
     market: KR
     name: 토마토시스템  
