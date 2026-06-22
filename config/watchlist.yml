@@ -40,7 +40,7 @@ tickers:
     name: Coinbase
   - symbol: JOBY
     market: US
-    name: Joby
+    name: Joby Aviaton
   - symbol: BKKT
     market: US
     name: Bakkt
@@ -56,6 +56,15 @@ tickers:
   - symbol: SMR
     market: US
     name: Smr
+  - symbol: SPCX
+    market: US
+    name: SpaceX
+  - symbol: POET
+    market: US
+    name: PoetTechnology
+  - symbol: CRCL
+    market: US
+    name: Circle
 
   # ---- 한국 시장 (KR) ----
   - symbol: 005930.KS
