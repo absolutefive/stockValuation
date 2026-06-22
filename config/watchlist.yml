@@ -26,15 +26,36 @@ tickers:
   - symbol: AAPL
     market: US
     name: Apple
-  - symbol: TLSA
+  - symbol: TSLA
     market: US
     name: Tesla
   - symbol: PLTR
     market: US
     name: Palantir
-  - symbol: NVDA
+  - symbol: SATL
     market: US
-    name: Nvidia
+    name: Sattlelogic
+  - symbol: COIN
+    market: US
+    name: Coinbase
+  - symbol: JOBY
+    market: US
+    name: Joby
+  - symbol: BKKT
+    market: US
+    name: Bakkt
+  - symbol: ABCL
+    market: US
+    name: abcellera
+  - symbol: MSTR
+    market: US
+    name: Microstrategy
+  - symbol: TLRY
+    market: US
+    name: Tilley
+  - symbol: SMR
+    market: US
+    name: Smr
 
   # ---- 한국 시장 (KR) ----
   - symbol: 005930.KS
@@ -46,3 +67,21 @@ tickers:
   - symbol: 035420.KS
     market: KR
     name: NAVER
+  - symbol: 138080.KS
+    market: KR
+    name: 오이솔루션  
+  - symbol: 018260.KS
+    market: KR
+    name: 삼성에스디에스  
+  - symbol: 304100.KS
+    market: KR
+    name: 솔트룩스  
+  - symbol: 011200.KS
+    market: KR
+    name: HMM 
+  - symbol: 010140.KS
+    market: KR
+    name: 삼성중공업  
+  - symbol: 393210.KS
+    market: KR
+    name: 토마토시스템  
