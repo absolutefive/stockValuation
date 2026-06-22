@@ -1,4 +1,9 @@
-data/
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# 대화형 대시보드의 로컬 스크래치 (수집 이력 data/snapshots/ 는 추적함)
+data/history.csv
+
+# 보고서 빌드 산출물 (GitHub Actions가 매번 재생성)
+docs/
