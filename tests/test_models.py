@@ -50,6 +50,14 @@ def test_dcf_share_buyback_raises_per_share_value():
     assert dcf_value(fewer_shares, FLAT) > base
 
 
+def test_dcf_fade_is_more_conservative_for_high_growth():
+    """고성장주는 성장률 감쇠(fade) 적용 시 평탄 성장보다 보수적 가치가 나온다."""
+    faded = Assumptions(discount_rate_override=0.085, terminal_growth=0.025, dcf_fade=True)
+    flat = Assumptions(discount_rate_override=0.085, terminal_growth=0.025, dcf_fade=False)
+    hyper = CompanyInputs(**{**SAMPLE.__dict__, "fcf_growth": 0.25})
+    assert dcf_value(hyper, faded) < dcf_value(hyper, flat)
+
+
 def test_srim_perpetual():
     # value = BV + BV*(ROE - r)/r = 2,000,000 + 2,000,000*(0.15-0.085)/0.085
     expected_total = 2_000_000 + 2_000_000 * (0.15 - 0.085) / 0.085

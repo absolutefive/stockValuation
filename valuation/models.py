@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Optional
 
 
@@ -23,6 +23,8 @@ class Assumptions:
     fair_peg: float = 1.0               # 적정 PEG (피터 린치 기준 1.0)
     peg_growth_cap: float = 0.50        # PEG 분모 성장률 상한
     srim_persistence: float = 1.0       # S-RIM 초과이익 지속계수 w (1.0 = 영구 지속)
+    dcf_fade: bool = True               # DCF 초기 성장률→영구 성장률 선형 감쇠(2단계)
+    growth_gate: bool = True            # ROIC<요구수익률 시 성장모델(DCF/PEG) 가중 자동 축소
     discount_rate_override: Optional[float] = None  # 지정 시 CAPM 대신 사용
 
     def cost_of_equity(self, beta: float) -> float:
@@ -90,8 +92,15 @@ def dcf_value(inputs: CompanyInputs, a: Assumptions) -> Optional[float]:
 
     pv = 0.0
     fcf_t = inputs.fcf
-    for t in range(1, a.projection_years + 1):
-        fcf_t *= 1 + growth
+    n = a.projection_years
+    for t in range(1, n + 1):
+        # 2단계 성장: 초기 성장률에서 영구 성장률로 선형 감쇠(fade).
+        # 고성장 상한이 추정기간 내내 유지되며 과대평가되는 문제를 완화한다.
+        if a.dcf_fade and n > 1:
+            g_t = growth + (a.terminal_growth - growth) * (t - 1) / (n - 1)
+        else:
+            g_t = growth
+        fcf_t *= 1 + g_t
         pv += fcf_t / (1 + r) ** t
 
     terminal = fcf_t * (1 + a.terminal_growth) / (r - a.terminal_growth)
@@ -203,17 +212,7 @@ def _scenario_composite(
     민감도 표(sensitivity_table)와 동일한 섭동 방식을 사용한다.
     """
     base_rate = base.cost_of_equity(inputs.beta)
-    a = Assumptions(
-        risk_free_rate=base.risk_free_rate,
-        equity_risk_premium=base.equity_risk_premium,
-        projection_years=base.projection_years,
-        terminal_growth=base.terminal_growth,
-        fcf_growth_cap=base.fcf_growth_cap,
-        fair_peg=base.fair_peg,
-        peg_growth_cap=base.peg_growth_cap,
-        srim_persistence=base.srim_persistence,
-        discount_rate_override=base_rate + rate_delta,
-    )
+    a = replace(base, discount_rate_override=base_rate + rate_delta)
     tweaked = CompanyInputs(**{**inputs.__dict__})
     if tweaked.eps_growth is not None:
         tweaked.eps_growth = max(tweaked.eps_growth + growth_delta, 0.0)
