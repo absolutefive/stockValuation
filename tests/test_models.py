@@ -1,14 +1,19 @@
 """밸류에이션 모델 순수 계산 로직 검증 (외부 데이터 불필요)."""
 
+from dataclasses import replace
+
 import pytest
 
 from valuation.models import (
     Assumptions,
     CompanyInputs,
+    _downgrade_confidence,
     classify_signal,
     dcf_value,
     evaluate,
+    fcf_conversion_ratio,
     peg_value,
+    roic_value,
     sensitivity_table,
     srim_value,
 )
@@ -48,6 +53,14 @@ def test_dcf_share_buyback_raises_per_share_value():
     base = dcf_value(SAMPLE, FLAT)
     fewer_shares = CompanyInputs(**{**SAMPLE.__dict__, "shares_outstanding": 900_000})
     assert dcf_value(fewer_shares, FLAT) > base
+
+
+def test_dcf_fade_is_more_conservative_for_high_growth():
+    """고성장주는 성장률 감쇠(fade) 적용 시 평탄 성장보다 보수적 가치가 나온다."""
+    faded = Assumptions(discount_rate_override=0.085, terminal_growth=0.025, dcf_fade=True)
+    flat = Assumptions(discount_rate_override=0.085, terminal_growth=0.025, dcf_fade=False)
+    hyper = CompanyInputs(**{**SAMPLE.__dict__, "fcf_growth": 0.25})
+    assert dcf_value(hyper, faded) < dcf_value(hyper, flat)
 
 
 def test_srim_perpetual():
@@ -94,7 +107,84 @@ def test_evaluate_composite_and_discrepancy():
     )
     expected_disc = (SAMPLE.price - result.composite) / result.composite * 100
     assert result.discrepancy_pct == pytest.approx(expected_disc)
-    assert result.signal == classify_signal(result.discrepancy_pct)
+
+
+def test_evaluate_band_brackets_composite():
+    """신뢰밴드는 점추정을 감싸야 한다 (하단 <= 복합 <= 상단)."""
+    result = evaluate(SAMPLE, FLAT)
+    assert result.composite_low is not None and result.composite_high is not None
+    assert result.composite_low <= result.composite <= result.composite_high
+
+
+def test_evaluate_signal_uses_band():
+    """시장가가 밴드 안이면 점추정 괴리율과 무관하게 '적정'으로 판정한다."""
+    result = evaluate(SAMPLE, FLAT)
+    inside = CompanyInputs(
+        **{**SAMPLE.__dict__, "price": result.composite_high}  # 밴드 상단 = 경계 안
+    )
+    assert evaluate(inside, FLAT).signal == "적정"
+    # 밴드 상단을 크게 초과하면 과열 신호
+    overheated = CompanyInputs(
+        **{**SAMPLE.__dict__, "price": result.composite_high * 1.5}
+    )
+    assert evaluate(overheated, FLAT).signal == "과열 경고"
+
+
+def test_fcf_conversion_quality_gate():
+    """FCF 전환율이 낮으면(현금 미동반 이익) 신뢰도가 하향되고 경고가 붙는다."""
+    # 순이익 대비 FCF가 30%뿐인 저품질 이익 기업
+    low_quality = CompanyInputs(
+        **{**SAMPLE.__dict__, "net_income": 4_000_000, "fcf": 1_200_000}
+    )
+    assert fcf_conversion_ratio(low_quality) == pytest.approx(0.3)
+    result = evaluate(low_quality, FLAT)
+    assert result.fcf_conversion == pytest.approx(0.3)
+    assert any("이익의 질" in n for n in result.notes)
+
+    # 순이익이 적자면 비율 해석 불가 → None, 경고 없음
+    loss = CompanyInputs(**{**SAMPLE.__dict__, "net_income": -1_000.0})
+    assert fcf_conversion_ratio(loss) is None
+
+
+def test_roic_value_and_growth_gate():
+    """ROIC<요구수익률이면 성장모델(DCF/PEG) 가중이 축소돼 S-RIM 쪽으로 쏠린다."""
+    # EBIT 작아 ROIC가 요구수익률(8.5%) 미만 → 가치 파괴 케이스
+    weak = CompanyInputs(
+        **{**SAMPLE.__dict__, "ebit": 100_000, "tax_rate": 0.21}
+    )
+    roic = roic_value(weak)
+    assert roic is not None and roic < 0.085
+    gated = evaluate(weak, FLAT)
+    assert gated.roic == pytest.approx(roic)
+    assert gated.roic_spread is not None and gated.roic_spread < 0
+    assert any("ROIC" in n for n in gated.notes)
+
+    # 게이트 발동 시 복합가는 게이트 미적용(가중 유지)보다 낮아야 한다
+    ungated = evaluate(weak, replace(FLAT, growth_gate=False))
+    assert gated.composite < ungated.composite
+
+    # EBIT/자본총계 없으면 게이트 비활성 (spread None, 노트 없음)
+    no_data = evaluate(SAMPLE, FLAT)
+    assert no_data.roic is None and no_data.roic_spread is None
+
+
+def test_confidence_downgrade_steps():
+    """이익의 질 경고는 신뢰도를 한 단계만 낮추고, 이미 낮으면 유지한다."""
+    assert _downgrade_confidence("높음", "이익질 의심") == "보통(이익질 의심)"
+    assert _downgrade_confidence("보통", "이익질 의심") == "낮음(이익질 의심)"
+    assert _downgrade_confidence("낮음(모델 발산)", "이익질 의심") == "낮음(모델 발산)"
+
+
+def test_dispersion_and_confidence():
+    """세 모델이 발산할수록 CV가 커지고 신뢰도 등급이 낮아진다."""
+    result = evaluate(SAMPLE, FLAT)
+    assert result.dispersion is not None and result.dispersion >= 0
+    assert result.confidence in ("높음", "보통", "낮음(모델 발산)")
+    # 모델 1개만 가용 → 교차검증 불가
+    single = CompanyInputs(ticker="S", price=50.0, eps=2.0, eps_growth=0.20)
+    single_result = evaluate(single, FLAT)
+    assert single_result.dispersion is None
+    assert single_result.confidence == "낮음(교차검증 불가)"
 
 
 def test_evaluate_weights():

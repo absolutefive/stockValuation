@@ -150,7 +150,10 @@ if results:
             "S-RIM": r.srim,
             "PEG": r.peg,
             "복합 적정주가": r.composite,
+            "적정가 하단": r.composite_low,
+            "적정가 상단": r.composite_high,
             "괴리율(%)": r.discrepancy_pct,
+            "신뢰도": r.confidence,
         }
         if portfolio is not None and r.ticker in set(portfolio["ticker"]):
             holding = portfolio[portfolio["ticker"] == r.ticker].iloc[0]
@@ -162,7 +165,7 @@ if results:
     board = pd.DataFrame(rows)
     st.dataframe(
         board.style.format(
-            {c: "${:,.2f}" for c in board.columns if c not in ("신호", "티커", "괴리율(%)", "매수단가 괴리율(%)")}
+            {c: "${:,.2f}" for c in board.columns if c not in ("신호", "티커", "신뢰도", "괴리율(%)", "매수단가 괴리율(%)")}
             | {"괴리율(%)": "{:+.1f}%", "매수단가 괴리율(%)": "{:+.1f}%"},
             na_rep="-",
         ),
@@ -171,7 +174,9 @@ if results:
     )
     st.caption(
         "괴리율 = (시장 주가 − 복합 적정주가) ÷ 복합 적정주가 × 100. "
-        "마이너스는 안전마진 확보 구간, +20% 초과는 심리적 프리미엄 과다 경고."
+        "마이너스는 안전마진 확보 구간, +20% 초과는 심리적 프리미엄 과다 경고. "
+        "신호는 점추정이 아닌 [적정가 하단~상단] 밴드를 기준으로 판정하며, "
+        "신뢰도는 세 모델의 수렴도(발산 시 하향)를 나타냅니다."
     )
 
     if st.button("📌 오늘 자 스냅샷 저장 (괴리율 추적 이력)"):
@@ -193,6 +198,23 @@ if results:
     )
     m3.metric("할인율 (CAPM)", f"{assumptions.cost_of_equity(inputs.beta):.2%}")
     m4.metric("신호", SIGNAL_EMOJI.get(result.signal, "") + " " + result.signal)
+
+    b1, b2, b3, b4 = st.columns(4)
+    if result.composite_low is not None and result.composite_high is not None:
+        b1.metric("적정가 밴드", f"${result.composite_low:,.0f} ~ ${result.composite_high:,.0f}")
+    else:
+        b1.metric("적정가 밴드", "-")
+    b2.metric("신뢰도", result.confidence)
+    b3.metric(
+        "ROIC 스프레드",
+        f"{result.roic_spread:+.1%}" if result.roic_spread is not None else "-",
+        help="ROIC − 요구수익률. 양수면 성장이 가치를 창출.",
+    )
+    b4.metric(
+        "FCF 전환율",
+        f"{result.fcf_conversion:.0%}" if result.fcf_conversion is not None else "-",
+        help="FCF ÷ 순이익. 1 근처가 건전, 낮으면 이익의 질 의심.",
+    )
     for note in result.notes:
         st.info(note)
 
@@ -258,7 +280,11 @@ if results:
                 "현금 및 현금성 자산": inputs.cash,
                 "총부채": inputs.total_debt,
                 "자본총계 (Book Value)": inputs.book_value,
+                "당기순이익 (TTM)": inputs.net_income,
+                "영업이익 (EBIT)": inputs.ebit,
+                "유효 법인세율": inputs.tax_rate,
                 "ROE": inputs.roe,
+                "ROIC": result.roic,
                 "EPS (TTM)": inputs.eps,
                 "예상 EPS 성장률": inputs.eps_growth,
                 "베타": inputs.beta,
