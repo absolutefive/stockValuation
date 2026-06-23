@@ -1,5 +1,7 @@
 """밸류에이션 모델 순수 계산 로직 검증 (외부 데이터 불필요)."""
 
+from dataclasses import replace
+
 import pytest
 
 from valuation.models import (
@@ -11,6 +13,7 @@ from valuation.models import (
     evaluate,
     fcf_conversion_ratio,
     peg_value,
+    roic_value,
     sensitivity_table,
     srim_value,
 )
@@ -141,6 +144,28 @@ def test_fcf_conversion_quality_gate():
     # 순이익이 적자면 비율 해석 불가 → None, 경고 없음
     loss = CompanyInputs(**{**SAMPLE.__dict__, "net_income": -1_000.0})
     assert fcf_conversion_ratio(loss) is None
+
+
+def test_roic_value_and_growth_gate():
+    """ROIC<요구수익률이면 성장모델(DCF/PEG) 가중이 축소돼 S-RIM 쪽으로 쏠린다."""
+    # EBIT 작아 ROIC가 요구수익률(8.5%) 미만 → 가치 파괴 케이스
+    weak = CompanyInputs(
+        **{**SAMPLE.__dict__, "ebit": 100_000, "tax_rate": 0.21}
+    )
+    roic = roic_value(weak)
+    assert roic is not None and roic < 0.085
+    gated = evaluate(weak, FLAT)
+    assert gated.roic == pytest.approx(roic)
+    assert gated.roic_spread is not None and gated.roic_spread < 0
+    assert any("ROIC" in n for n in gated.notes)
+
+    # 게이트 발동 시 복합가는 게이트 미적용(가중 유지)보다 낮아야 한다
+    ungated = evaluate(weak, replace(FLAT, growth_gate=False))
+    assert gated.composite < ungated.composite
+
+    # EBIT/자본총계 없으면 게이트 비활성 (spread None, 노트 없음)
+    no_data = evaluate(SAMPLE, FLAT)
+    assert no_data.roic is None and no_data.roic_spread is None
 
 
 def test_confidence_downgrade_steps():

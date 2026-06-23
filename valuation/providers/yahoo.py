@@ -111,6 +111,16 @@ class YahooProvider(DataProvider):
         if net_income is None:
             net_income = _latest(income, "Net Income", "Net Income Common Stockholders")
 
+        ebit = info.get("ebit")
+        if ebit is None:
+            ebit = _latest(income, "EBIT", "Operating Income")
+        # 유효 법인세율 = 법인세 ÷ 세전이익 (없으면 모델이 21% 기본 가정 사용)
+        tax_rate = None
+        tax_provision = _latest(income, "Tax Provision", "Income Tax Expense")
+        pretax = _latest(income, "Pretax Income", "Income Before Tax")
+        if tax_provision is not None and pretax and pretax > 0:
+            tax_rate = tax_provision / pretax
+
         roe = info.get("returnOnEquity")
         if roe is None and book_value and net_income is not None:
             roe = net_income / book_value
@@ -133,6 +143,8 @@ class YahooProvider(DataProvider):
             total_debt=float(total_debt) if total_debt is not None else None,
             book_value=float(book_value) if book_value is not None else None,
             net_income=float(net_income) if net_income is not None else None,
+            ebit=float(ebit) if ebit is not None else None,
+            tax_rate=float(tax_rate) if tax_rate is not None else None,
             roe=float(roe) if roe is not None else None,
             eps=float(eps) if eps is not None else None,
             eps_growth=float(eps_growth) if eps_growth is not None else None,
@@ -187,6 +199,7 @@ class YahooProvider(DataProvider):
                 total_debt=cell(balance, "Total Debt"),
                 book_value=book,
                 net_income=net_income,
+                ebit=cell(income, "EBIT", "Operating Income"),
                 roe=(net_income / book) if (net_income is not None and book) else None,
                 eps=eps,
             )

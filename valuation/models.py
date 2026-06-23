@@ -48,6 +48,8 @@ class CompanyInputs:
     total_debt: Optional[float] = None        # 이자 발생 총부채
     book_value: Optional[float] = None        # 자본총계
     net_income: Optional[float] = None        # 당기순이익 (TTM) — FCF 전환율 산출용
+    ebit: Optional[float] = None              # 영업이익(EBIT) — ROIC(NOPAT) 산출용
+    tax_rate: Optional[float] = None          # 유효 법인세율 (소수, 없으면 21% 가정)
     roe: Optional[float] = None               # 자기자본이익률 (소수)
     eps: Optional[float] = None               # 주당순이익 (TTM)
     eps_growth: Optional[float] = None        # 예상 EPS 성장률 (소수)
@@ -71,6 +73,8 @@ class ValuationResult:
     composite_high: Optional[float] = None      # 낙관 시나리오 + 모델 발산 반영 상단
     dispersion: Optional[float] = None          # 모델 간 변동계수 CV (수렴도; 작을수록 일치)
     fcf_conversion: Optional[float] = None      # FCF/순이익 — 이익의 질(현금 뒷받침)
+    roic: Optional[float] = None                # 투하자본이익률 (NOPAT/투하자본)
+    roic_spread: Optional[float] = None         # ROIC − 요구수익률 (양수=가치 창출)
     confidence: str = "판단불가"                # CV·가용 모델 수 기반 신뢰도 등급
     discrepancy_pct: Optional[float] = None   # (시장가 - 적정가) / 적정가 * 100
     signal: str = "판단불가"
@@ -195,6 +199,24 @@ def fcf_conversion_ratio(inputs: CompanyInputs) -> Optional[float]:
     if inputs.fcf is None or inputs.net_income is None or inputs.net_income <= 0:
         return None
     return inputs.fcf / inputs.net_income
+
+
+def roic_value(inputs: CompanyInputs) -> Optional[float]:
+    """투하자본이익률(ROIC) = NOPAT ÷ 투하자본.
+
+    NOPAT = 영업이익 × (1 − 유효세율). 투하자본 = 총부채 + 자본총계 − 현금.
+    성장이 가치를 창출하는지(ROIC > 요구수익률) 판별하는 게이트의 핵심 지표다.
+    영업이익이나 자본총계가 없으면 산출하지 않는다(게이트 비활성).
+    """
+    if inputs.ebit is None or inputs.book_value is None:
+        return None
+    tax = inputs.tax_rate if inputs.tax_rate is not None else 0.21
+    tax = min(max(tax, 0.0), 0.35)
+    nopat = inputs.ebit * (1 - tax)
+    invested = (inputs.total_debt or 0.0) + inputs.book_value - (inputs.cash or 0.0)
+    if invested <= 0:
+        return None
+    return nopat / invested
 
 
 _CONFIDENCE_RANK = {
@@ -324,6 +346,19 @@ def evaluate(
         result.notes.append("S-RIM 미적용 (자본총계/ROE 데이터 부족)")
     if result.peg is None:
         result.notes.append("PEG 미적용 (EPS 적자 또는 성장률 0 이하)")
+
+    # 성장 진위 게이트: ROIC가 요구수익률을 밑돌면 성장은 가치를 파괴하므로
+    # 성장 기반 모델(DCF·PEG) 가중을 축소하고 자산가치(S-RIM)에 무게를 둔다.
+    result.roic = roic_value(inputs)
+    if result.roic is not None:
+        result.roic_spread = result.roic - a.cost_of_equity(inputs.beta)
+        if a.growth_gate and result.roic_spread < 0:
+            w = {**w, "dcf": w["dcf"] * 0.4, "peg": w["peg"] * 0.4}
+            result.notes.append(
+                f"ROIC {result.roic:.1%} < 요구수익률 "
+                f"{a.cost_of_equity(inputs.beta):.1%}: 성장이 가치를 창출하지 못해 "
+                "DCF/PEG 가중을 축소했습니다 (자산가치 중심 평가)"
+            )
 
     result.composite = _composite_from(values, w)
     result.dispersion = _dispersion(values)
