@@ -57,6 +57,12 @@ python -m valuation.collector --report
   을 두고, 종목 record를 `valuation` / `inputs` / `meta` 로 분리해 새 필드를
   추가해도 기존 보고서가 깨지지 않습니다. 종목별 수집 실패는 `error` 필드에
   격리되어 전체 수집을 막지 않습니다.
+- **계산 과정·출처 기록** (`data/audit/`): 스냅샷의 결과값이 **어떤 입력으로
+  어떻게 계산됐는지**(단계별 수식 + 실제 숫자 대입)와 **각 입력값의 출처**를
+  주요 3대 지표(DCF/S-RIM/PEG)에 한해 일자별로 남깁니다. 수집된 값이 유효하게
+  계산에 반영되는지 사람이 직접 검증하기 위한 용도입니다. 계산 단계는 모델의
+  `*_explain` 함수에서 나오므로 스냅샷 산출값과 항상 일치합니다. 기존 스냅샷은
+  `python -m valuation.audit` 로 백필할 수 있습니다.
 - **HTML 보고서** (`docs/index.html`): 신호별 요약 카드, 시장 탭(전체/미국/한국),
   검색·정렬 표, 괴리율 추세 스파크라인, 행 클릭 시 현재가 vs 적정가 시계열 차트.
   데이터가 늘어도 종목 단위로 직관적으로 탐색할 수 있습니다.
@@ -165,7 +171,7 @@ register_provider(MyProvider)  # CLI/대시보드에 즉시 노출
 ```
 config/watchlist.yml   # 수집 대상 티커 등록 (한국/미국)
 valuation/
-├── models.py          # DCF / S-RIM / PEG 순수 계산 로직 + 복합 적정주가 + 민감도
+├── models.py          # DCF / S-RIM / PEG 순수 계산 로직(+_explain 과정 기록) + 복합 + 민감도
 ├── providers/
 │   ├── base.py        # DataProvider 추상 인터페이스 (새 소스 연동 지점)
 │   ├── yahoo.py       # 야후 파이낸스 구현 (기본)
@@ -174,13 +180,15 @@ valuation/
 ├── watchlist.py       # watchlist.yml 로더 + 시장/티커 검증
 ├── collector.py       # 일별 수집 파이프라인 (watchlist → 수집 → 스냅샷)
 ├── storage.py         # 확장 가능한 일자별 JSON 스냅샷 저장소
+├── audit.py           # DCF/S-RIM/PEG 계산 과정·출처 기록(검증용) + 스냅샷 백필
 ├── report.py          # 스냅샷 → HTML 보고서 생성기
 ├── templates/
 │   └── report.html    # 보고서 디자인 템플릿 (데이터는 빌드 시 주입)
 ├── tracker.py         # 대화형 대시보드용 괴리율 CSV 저장소
 └── cli.py             # 커맨드라인 계산기 (--provider로 소스 선택)
 app.py                 # Streamlit 대시보드 (사이드바에서 소스 선택)
-data/snapshots/        # 수집 이력 (일자별 JSON, git에 누적)
+data/snapshots/        # 수집 이력 = 보고서용 결과값 (일자별 JSON, git에 누적)
+data/audit/            # 계산 과정·출처 기록 = DCF/S-RIM/PEG 검증용 (일자별 JSON)
 docs/index.html        # 생성된 HTML 보고서 (GitHub Pages 배포 대상)
 .github/workflows/     # 매일 자동 수집·배포 워크플로우
 tests/                 # 모델·프로바이더·파이프라인 단위 테스트 (네트워크 불필요)
