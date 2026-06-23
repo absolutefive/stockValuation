@@ -107,11 +107,13 @@ class YahooProvider(DataProvider):
         if book_value is None and info.get("bookValue") and shares:
             book_value = float(info["bookValue"]) * shares
 
-        roe = info.get("returnOnEquity")
-        if roe is None and book_value:
+        net_income = info.get("netIncomeToCommon")
+        if net_income is None:
             net_income = _latest(income, "Net Income", "Net Income Common Stockholders")
-            if net_income is not None:
-                roe = net_income / book_value
+
+        roe = info.get("returnOnEquity")
+        if roe is None and book_value and net_income is not None:
+            roe = net_income / book_value
 
         eps = info.get("trailingEps")
         eps_growth = info.get("earningsGrowth")
@@ -130,6 +132,7 @@ class YahooProvider(DataProvider):
             cash=float(cash) if cash is not None else None,
             total_debt=float(total_debt) if total_debt is not None else None,
             book_value=float(book_value) if book_value is not None else None,
+            net_income=float(net_income) if net_income is not None else None,
             roe=float(roe) if roe is not None else None,
             eps=float(eps) if eps is not None else None,
             eps_growth=float(eps_growth) if eps_growth is not None else None,
@@ -183,6 +186,7 @@ class YahooProvider(DataProvider):
                 ),
                 total_debt=cell(balance, "Total Debt"),
                 book_value=book,
+                net_income=net_income,
                 roe=(net_income / book) if (net_income is not None and book) else None,
                 eps=eps,
             )

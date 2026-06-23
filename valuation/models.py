@@ -47,6 +47,7 @@ class CompanyInputs:
     cash: Optional[float] = None              # 현금 및 현금성 자산
     total_debt: Optional[float] = None        # 이자 발생 총부채
     book_value: Optional[float] = None        # 자본총계
+    net_income: Optional[float] = None        # 당기순이익 (TTM) — FCF 전환율 산출용
     roe: Optional[float] = None               # 자기자본이익률 (소수)
     eps: Optional[float] = None               # 주당순이익 (TTM)
     eps_growth: Optional[float] = None        # 예상 EPS 성장률 (소수)
@@ -69,6 +70,7 @@ class ValuationResult:
     composite_low: Optional[float] = None       # 보수 시나리오 + 모델 발산 반영 하단
     composite_high: Optional[float] = None      # 낙관 시나리오 + 모델 발산 반영 상단
     dispersion: Optional[float] = None          # 모델 간 변동계수 CV (수렴도; 작을수록 일치)
+    fcf_conversion: Optional[float] = None      # FCF/순이익 — 이익의 질(현금 뒷받침)
     confidence: str = "판단불가"                # CV·가용 모델 수 기반 신뢰도 등급
     discrepancy_pct: Optional[float] = None   # (시장가 - 적정가) / 적정가 * 100
     signal: str = "판단불가"
@@ -181,6 +183,35 @@ def _dispersion(values: tuple[Optional[float], ...]) -> Optional[float]:
         return None
     var = sum((v - mean) ** 2 for v in vals) / len(vals)
     return math.sqrt(var) / mean
+
+
+def fcf_conversion_ratio(inputs: CompanyInputs) -> Optional[float]:
+    """이익의 질: 잉여현금흐름 ÷ 당기순이익.
+
+    회계이익(EPS/ROE)이 실제 현금으로 뒷받침되는지 본다. 1 근처가 건전하며,
+    지속적으로 낮으면 매출채권·재고 등으로 이익이 부풀려졌을 수 있다.
+    순이익이 0 이하면 비율 해석이 무의미하므로 산출하지 않는다.
+    """
+    if inputs.fcf is None or inputs.net_income is None or inputs.net_income <= 0:
+        return None
+    return inputs.fcf / inputs.net_income
+
+
+_CONFIDENCE_RANK = {
+    "높음": 0,
+    "보통": 1,
+    "낮음(모델 발산)": 2,
+    "낮음(교차검증 불가)": 2,
+}
+
+
+def _downgrade_confidence(level: str, reason: str) -> str:
+    """이익의 질 등 경고 발생 시 신뢰도를 한 단계 낮춘다."""
+    if level == "높음":
+        return f"보통({reason})"
+    if level == "보통":
+        return f"낮음({reason})"
+    return level  # 이미 낮음/판단불가면 그대로 둔다
 
 
 def classify_confidence(dispersion: Optional[float], n_models: int) -> str:
@@ -298,6 +329,15 @@ def evaluate(
     result.dispersion = _dispersion(values)
     n_models = sum(1 for v in values if v is not None and v > 0)
     result.confidence = classify_confidence(result.dispersion, n_models)
+
+    # 이익의 질 게이트: FCF가 회계이익을 뒷받침하지 못하면 신뢰도 하향
+    result.fcf_conversion = fcf_conversion_ratio(inputs)
+    if result.fcf_conversion is not None and result.fcf_conversion < 0.6:
+        result.notes.append(
+            f"이익의 질 주의: FCF 전환율 {result.fcf_conversion:.0%} "
+            "(회계이익 대비 현금 창출 미흡)"
+        )
+        result.confidence = _downgrade_confidence(result.confidence, "이익질 의심")
 
     if result.composite and result.composite > 0:
         # 1) 가정 시나리오 밴드: 보수(고할인·저성장) ~ 낙관(저할인·고성장)

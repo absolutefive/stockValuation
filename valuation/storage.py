@@ -75,6 +75,7 @@ def build_record(
             "composite_low": result.composite_low,
             "composite_high": result.composite_high,
             "dispersion": result.dispersion,
+            "fcf_conversion": result.fcf_conversion,
             "confidence": result.confidence,
             "discrepancy_pct": result.discrepancy_pct,
             "signal": result.signal,

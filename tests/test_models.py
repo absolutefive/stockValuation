@@ -5,9 +5,11 @@ import pytest
 from valuation.models import (
     Assumptions,
     CompanyInputs,
+    _downgrade_confidence,
     classify_signal,
     dcf_value,
     evaluate,
+    fcf_conversion_ratio,
     peg_value,
     sensitivity_table,
     srim_value,
@@ -123,6 +125,29 @@ def test_evaluate_signal_uses_band():
         **{**SAMPLE.__dict__, "price": result.composite_high * 1.5}
     )
     assert evaluate(overheated, FLAT).signal == "과열 경고"
+
+
+def test_fcf_conversion_quality_gate():
+    """FCF 전환율이 낮으면(현금 미동반 이익) 신뢰도가 하향되고 경고가 붙는다."""
+    # 순이익 대비 FCF가 30%뿐인 저품질 이익 기업
+    low_quality = CompanyInputs(
+        **{**SAMPLE.__dict__, "net_income": 4_000_000, "fcf": 1_200_000}
+    )
+    assert fcf_conversion_ratio(low_quality) == pytest.approx(0.3)
+    result = evaluate(low_quality, FLAT)
+    assert result.fcf_conversion == pytest.approx(0.3)
+    assert any("이익의 질" in n for n in result.notes)
+
+    # 순이익이 적자면 비율 해석 불가 → None, 경고 없음
+    loss = CompanyInputs(**{**SAMPLE.__dict__, "net_income": -1_000.0})
+    assert fcf_conversion_ratio(loss) is None
+
+
+def test_confidence_downgrade_steps():
+    """이익의 질 경고는 신뢰도를 한 단계만 낮추고, 이미 낮으면 유지한다."""
+    assert _downgrade_confidence("높음", "이익질 의심") == "보통(이익질 의심)"
+    assert _downgrade_confidence("보통", "이익질 의심") == "낮음(이익질 의심)"
+    assert _downgrade_confidence("낮음(모델 발산)", "이익질 의심") == "낮음(모델 발산)"
 
 
 def test_dispersion_and_confidence():
