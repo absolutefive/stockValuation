@@ -94,7 +94,39 @@ def test_evaluate_composite_and_discrepancy():
     )
     expected_disc = (SAMPLE.price - result.composite) / result.composite * 100
     assert result.discrepancy_pct == pytest.approx(expected_disc)
-    assert result.signal == classify_signal(result.discrepancy_pct)
+
+
+def test_evaluate_band_brackets_composite():
+    """신뢰밴드는 점추정을 감싸야 한다 (하단 <= 복합 <= 상단)."""
+    result = evaluate(SAMPLE, FLAT)
+    assert result.composite_low is not None and result.composite_high is not None
+    assert result.composite_low <= result.composite <= result.composite_high
+
+
+def test_evaluate_signal_uses_band():
+    """시장가가 밴드 안이면 점추정 괴리율과 무관하게 '적정'으로 판정한다."""
+    result = evaluate(SAMPLE, FLAT)
+    inside = CompanyInputs(
+        **{**SAMPLE.__dict__, "price": result.composite_high}  # 밴드 상단 = 경계 안
+    )
+    assert evaluate(inside, FLAT).signal == "적정"
+    # 밴드 상단을 크게 초과하면 과열 신호
+    overheated = CompanyInputs(
+        **{**SAMPLE.__dict__, "price": result.composite_high * 1.5}
+    )
+    assert evaluate(overheated, FLAT).signal == "과열 경고"
+
+
+def test_dispersion_and_confidence():
+    """세 모델이 발산할수록 CV가 커지고 신뢰도 등급이 낮아진다."""
+    result = evaluate(SAMPLE, FLAT)
+    assert result.dispersion is not None and result.dispersion >= 0
+    assert result.confidence in ("높음", "보통", "낮음(모델 발산)")
+    # 모델 1개만 가용 → 교차검증 불가
+    single = CompanyInputs(ticker="S", price=50.0, eps=2.0, eps_growth=0.20)
+    single_result = evaluate(single, FLAT)
+    assert single_result.dispersion is None
+    assert single_result.confidence == "낮음(교차검증 불가)"
 
 
 def test_evaluate_weights():

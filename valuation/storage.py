@@ -21,6 +21,8 @@
           "ticker": "AAPL", "market": "US", "name": "Apple Inc.",
           "currency": "USD", "price": 180.0,
           "valuation": {"dcf":..,"srim":..,"peg":..,"composite":..,
+                        "composite_low":..,"composite_high":..,
+                        "dispersion":..,"confidence":"..",
                         "discrepancy_pct":..,"signal":".."},
           "inputs": { ...CompanyInputs 원본... },
           "notes": [..], "error": null
@@ -70,6 +72,10 @@ def build_record(
             "srim": result.srim,
             "peg": result.peg,
             "composite": result.composite,
+            "composite_low": result.composite_low,
+            "composite_high": result.composite_high,
+            "dispersion": result.dispersion,
+            "confidence": result.confidence,
             "discrepancy_pct": result.discrepancy_pct,
             "signal": result.signal,
         }

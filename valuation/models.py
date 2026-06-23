@@ -63,7 +63,11 @@ class ValuationResult:
     dcf: Optional[float]
     srim: Optional[float]
     peg: Optional[float]
-    composite: Optional[float] = None
+    composite: Optional[float] = None          # 기준 시나리오 복합 적정가 (점추정)
+    composite_low: Optional[float] = None       # 보수 시나리오 + 모델 발산 반영 하단
+    composite_high: Optional[float] = None      # 낙관 시나리오 + 모델 발산 반영 상단
+    dispersion: Optional[float] = None          # 모델 간 변동계수 CV (수렴도; 작을수록 일치)
+    confidence: str = "판단불가"                # CV·가용 모델 수 기반 신뢰도 등급
     discrepancy_pct: Optional[float] = None   # (시장가 - 적정가) / 적정가 * 100
     signal: str = "판단불가"
     notes: list[str] = field(default_factory=list)
@@ -141,6 +145,102 @@ def peg_value(inputs: CompanyInputs, a: Assumptions) -> Optional[float]:
     return inputs.eps * fair_per
 
 
+def _model_values(inputs: CompanyInputs, a: Assumptions) -> tuple[Optional[float], ...]:
+    """세 모델의 1주당 산출값을 (dcf, srim, peg) 순서로 반환."""
+    return dcf_value(inputs, a), srim_value(inputs, a), peg_value(inputs, a)
+
+
+def _composite_from(
+    values: tuple[Optional[float], ...], weights: dict[str, float]
+) -> Optional[float]:
+    """가용 모델값의 가중 평균. 밴드/민감도 계산에서 재귀 없이 재사용한다."""
+    parts = zip(("dcf", "srim", "peg"), values)
+    valid = [(v, weights[k]) for k, v in parts if v is not None and weights[k] > 0]
+    if not valid:
+        return None
+    total_weight = sum(wt for _, wt in valid)
+    return sum(v * wt for v, wt in valid) / total_weight
+
+
+def _dispersion(values: tuple[Optional[float], ...]) -> Optional[float]:
+    """가용 모델값의 변동계수(표준편차/평균). 모델 2개 미만이면 산출 불가."""
+    vals = [v for v in values if v is not None and v > 0]
+    if len(vals) < 2:
+        return None
+    mean = sum(vals) / len(vals)
+    if mean <= 0:
+        return None
+    var = sum((v - mean) ** 2 for v in vals) / len(vals)
+    return math.sqrt(var) / mean
+
+
+def classify_confidence(dispersion: Optional[float], n_models: int) -> str:
+    """모델 수렴도와 가용 모델 수로 적정가 신뢰도를 등급화한다.
+
+    모델이 1개뿐이면 상호 검증 자체가 불가능하므로 신뢰도를 낮춘다.
+    변동계수(CV)가 작을수록 세 렌즈가 같은 결론으로 수렴한다는 의미다.
+    """
+    if n_models == 0:
+        return "판단불가"
+    if n_models < 2 or dispersion is None:
+        return "낮음(교차검증 불가)"
+    if dispersion <= 0.15:
+        return "높음"
+    if dispersion <= 0.35:
+        return "보통"
+    return "낮음(모델 발산)"
+
+
+def _scenario_composite(
+    inputs: CompanyInputs,
+    base: Assumptions,
+    rate_delta: float,
+    growth_delta: float,
+    weights: dict[str, float],
+) -> Optional[float]:
+    """기준 가정에서 할인율·성장률을 흔든 시나리오의 복합 적정가.
+
+    민감도 표(sensitivity_table)와 동일한 섭동 방식을 사용한다.
+    """
+    base_rate = base.cost_of_equity(inputs.beta)
+    a = Assumptions(
+        risk_free_rate=base.risk_free_rate,
+        equity_risk_premium=base.equity_risk_premium,
+        projection_years=base.projection_years,
+        terminal_growth=base.terminal_growth,
+        fcf_growth_cap=base.fcf_growth_cap,
+        fair_peg=base.fair_peg,
+        peg_growth_cap=base.peg_growth_cap,
+        srim_persistence=base.srim_persistence,
+        discount_rate_override=base_rate + rate_delta,
+    )
+    tweaked = CompanyInputs(**{**inputs.__dict__})
+    if tweaked.eps_growth is not None:
+        tweaked.eps_growth = max(tweaked.eps_growth + growth_delta, 0.0)
+    if tweaked.fcf_growth is not None:
+        tweaked.fcf_growth = max(tweaked.fcf_growth + growth_delta, 0.0)
+    return _composite_from(_model_values(tweaked, a), weights)
+
+
+def band_discrepancy(
+    price: Optional[float],
+    low: Optional[float],
+    high: Optional[float],
+) -> Optional[float]:
+    """밴드 대비 유효 괴리율. 시장가가 밴드 안이면 0(적정)으로 본다.
+
+    점추정 단일 숫자가 아니라 '적정 구간'을 기준으로 삼아, 가정 민감도와
+    모델 발산이 큰 종목을 섣불리 저평가/과열로 판정하지 않게 한다.
+    """
+    if price is None or low is None or high is None:
+        return None
+    if price < low:
+        return (price - low) / low * 100
+    if price > high:
+        return (price - high) / high * 100
+    return 0.0
+
+
 def classify_signal(discrepancy_pct: Optional[float]) -> str:
     """괴리율 기반 투자 신호.
 
@@ -164,19 +264,28 @@ def evaluate(
     inputs: CompanyInputs,
     assumptions: Optional[Assumptions] = None,
     weights: Optional[dict[str, float]] = None,
+    rate_delta: float = 0.01,
+    growth_delta: float = 0.03,
 ) -> ValuationResult:
-    """3대 모델을 모두 계산하고 가용 모델의 가중 평균으로 복합 적정주가를 구한다."""
+    """3대 모델을 계산하고 복합 적정주가와 신뢰밴드를 산출한다.
+
+    - composite: 기준 가정의 가중 평균 (점추정)
+    - composite_low/high: 보수·낙관 시나리오(±할인율 ±성장률)에 모델 발산(CV)을
+      더해 넓힌 적정가 구간. 신호는 이 밴드를 기준으로 판정한다.
+    - confidence: 세 모델의 수렴도와 가용 모델 수 기반 신뢰도 등급
+    """
     a = assumptions or Assumptions()
     w = {"dcf": 1.0, "srim": 1.0, "peg": 1.0}
     if weights:
         w.update(weights)
 
+    values = _model_values(inputs, a)
     result = ValuationResult(
         ticker=inputs.ticker,
         price=inputs.price,
-        dcf=dcf_value(inputs, a),
-        srim=srim_value(inputs, a),
-        peg=peg_value(inputs, a),
+        dcf=values[0],
+        srim=values[1],
+        peg=values[2],
     )
 
     if result.dcf is None:
@@ -186,21 +295,29 @@ def evaluate(
     if result.peg is None:
         result.notes.append("PEG 미적용 (EPS 적자 또는 성장률 0 이하)")
 
-    parts = [
-        (result.dcf, w["dcf"]),
-        (result.srim, w["srim"]),
-        (result.peg, w["peg"]),
-    ]
-    valid = [(v, wt) for v, wt in parts if v is not None and wt > 0]
-    if valid:
-        total_weight = sum(wt for _, wt in valid)
-        result.composite = sum(v * wt for v, wt in valid) / total_weight
+    result.composite = _composite_from(values, w)
+    result.dispersion = _dispersion(values)
+    n_models = sum(1 for v in values if v is not None and v > 0)
+    result.confidence = classify_confidence(result.dispersion, n_models)
+
+    if result.composite and result.composite > 0:
+        # 1) 가정 시나리오 밴드: 보수(고할인·저성장) ~ 낙관(저할인·고성장)
+        conservative = _scenario_composite(inputs, a, rate_delta, -growth_delta, w)
+        optimistic = _scenario_composite(inputs, a, -rate_delta, growth_delta, w)
+        candidates = [c for c in (conservative, optimistic, result.composite) if c]
+        lo, hi = min(candidates), max(candidates)
+        # 2) 모델 발산(CV)만큼 밴드를 추가로 확장 → 발산 종목일수록 판단 보류
+        cv = result.dispersion or 0.0
+        result.composite_low = lo * (1 - 0.5 * cv)
+        result.composite_high = hi * (1 + 0.5 * cv)
 
     if result.composite and inputs.price and result.composite > 0:
         result.discrepancy_pct = (
             (inputs.price - result.composite) / result.composite * 100
         )
-    result.signal = classify_signal(result.discrepancy_pct)
+    # 신호는 점추정이 아닌 밴드 기준 유효 괴리율로 판정
+    eff = band_discrepancy(inputs.price, result.composite_low, result.composite_high)
+    result.signal = classify_signal(eff if eff is not None else result.discrepancy_pct)
     return result
 
 
@@ -215,27 +332,11 @@ def sensitivity_table(
     행: 할인율 변화, 열: 성장률 변화. 영구성장률 가정의 민감도 문제를
     투자자가 직접 확인할 수 있게 한다.
     """
-    base_rate = base.cost_of_equity(inputs.beta)
+    w = {"dcf": 1.0, "srim": 1.0, "peg": 1.0}
     rows: list[list[Optional[float]]] = []
     for dr in rate_steps:
         row: list[Optional[float]] = []
         for dg in growth_steps:
-            a = Assumptions(
-                risk_free_rate=base.risk_free_rate,
-                equity_risk_premium=base.equity_risk_premium,
-                projection_years=base.projection_years,
-                terminal_growth=base.terminal_growth,
-                fcf_growth_cap=base.fcf_growth_cap,
-                fair_peg=base.fair_peg,
-                peg_growth_cap=base.peg_growth_cap,
-                srim_persistence=base.srim_persistence,
-                discount_rate_override=base_rate + dr,
-            )
-            tweaked = CompanyInputs(**{**inputs.__dict__})
-            if tweaked.eps_growth is not None:
-                tweaked.eps_growth = max(tweaked.eps_growth + dg, 0.0)
-            if tweaked.fcf_growth is not None:
-                tweaked.fcf_growth = max(tweaked.fcf_growth + dg, 0.0)
-            row.append(evaluate(tweaked, a).composite)
+            row.append(_scenario_composite(inputs, base, dr, dg, w))
         rows.append(row)
     return rows

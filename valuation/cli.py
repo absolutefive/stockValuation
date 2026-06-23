@@ -54,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
 
     provider = get_provider(args.provider)
     results = []
-    header = f"{'티커':<8}{'시장가':>12}{'DCF':>12}{'S-RIM':>12}{'PEG':>12}{'복합적정가':>14}{'괴리율':>10}  신호"
+    header = f"{'티커':<8}{'시장가':>12}{'DCF':>12}{'S-RIM':>12}{'PEG':>12}{'복합적정가':>14}{'괴리율':>10}{'신뢰도':>16}  신호"
     print(f"데이터 소스: {provider.name}")
     print(header)
     print("-" * len(header.expandtabs()))
@@ -78,8 +78,14 @@ def main(argv: list[str] | None = None) -> int:
             f"{_fmt(result.srim):>12}"
             f"{_fmt(result.peg):>12}"
             f"{_fmt(result.composite):>14}"
-            f"{disc:>10}  {result.signal}"
+            f"{disc:>10}"
+            f"{result.confidence:>16}  {result.signal}"
         )
+        if result.composite_low is not None and result.composite_high is not None:
+            print(
+                f"{'':<8}  적정가 밴드: {_fmt(result.composite_low)} ~ "
+                f"{_fmt(result.composite_high)}"
+            )
         for note in result.notes:
             print(f"{'':<8}  * {note}")
 
