@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-06-23",
-  "generated_at": "2026-06-23T13:32:58.955918+00:00",
+  "generated_at": "2026-06-23T22:57:44.671930+00:00",
   "provider": "yahoo",
   "assumptions": {
     "risk_free_rate": 0.043,
@@ -22,7 +22,7 @@
       "market": "US",
       "name": "Apple",
       "currency": "USD",
-      "price": 298.21,
+      "price": 294.3,
       "valuation": {
         "dcf": 143.46970295735355,
         "srim": 71.44786028868914,
@@ -35,12 +35,12 @@
         "roic": 1.2484394121230211,
         "roic_spread": 1.1511394121230212,
         "confidence": "보통",
-        "discrepancy_pct": 126.49688577167588,
+        "discrepancy_pct": 123.52715697865338,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "AAPL",
-        "price": 298.21,
+        "price": 294.3,
         "shares_outstanding": 15004697000.0,
         "fcf": 101090746368.0,
         "cash": 68507000832.0,
@@ -65,7 +65,7 @@
       "market": "US",
       "name": "Tesla",
       "currency": "USD",
-      "price": 391.84,
+      "price": 381.61,
       "valuation": {
         "dcf": 24.234383539434603,
         "srim": 8.589847603790659,
@@ -78,12 +78,12 @@
         "roic": 0.07698130650781992,
         "roic_spread": -0.055918693492180094,
         "confidence": "낮음(모델 발산)",
-        "discrepancy_pct": 3120.2496857306837,
+        "discrepancy_pct": 3036.1767113405635,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "TSLA",
-        "price": 391.84,
+        "price": 381.61,
         "shares_outstanding": 3526250000.0,
         "fcf": 5251999744.0,
         "cash": 44743000064.0,
@@ -110,25 +110,25 @@
       "market": "US",
       "name": "Palantir",
       "currency": "USD",
-      "price": 119.5,
+      "price": 116.7,
       "valuation": {
         "dcf": 15.007136202781805,
         "srim": 7.902670852746449,
-        "peg": 44.5,
-        "composite": 22.469935685176086,
-        "composite_low": 14.15773678109538,
-        "composite_high": 31.38617771758592,
-        "dispersion": 0.705178612669919,
+        "peg": 44.0,
+        "composite": 22.303269018509422,
+        "composite_low": 14.105360833272737,
+        "composite_high": 31.10180134762953,
+        "dispersion": 0.7000613968444265,
         "fcf_conversion": 0.768343094646532,
         "roic": null,
         "roic_spread": null,
         "confidence": "낮음(모델 발산)",
-        "discrepancy_pct": 431.8217269257108,
+        "discrepancy_pct": 423.2416822087874,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "PLTR",
-        "price": 119.5,
+        "price": 116.7,
         "shares_outstanding": 2565197000.0,
         "fcf": 1752997120.0,
         "cash": 8026413056.0,
@@ -138,7 +138,7 @@
         "ebit": 1414015000.0,
         "tax_rate": 0.013710895830014818,
         "roe": 0.32587,
-        "eps": 0.89,
+        "eps": 0.88,
         "eps_growth": 3.25,
         "fcf_growth": null,
         "beta": 1.515,
@@ -153,7 +153,7 @@
       "market": "US",
       "name": "Sattlelogic",
       "currency": "USD",
-      "price": 5.8276,
+      "price": 5.56,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -171,7 +171,7 @@
       },
       "inputs": {
         "ticker": "SATL",
-        "price": 5.8276,
+        "price": 5.56,
         "shares_outstanding": 134134266.0,
         "fcf": -16684750.0,
         "cash": 121885000.0,
@@ -201,7 +201,7 @@
       "market": "US",
       "name": "Coinbase",
       "currency": "USD",
-      "price": 160.4,
+      "price": 158.18,
       "valuation": {
         "dcf": 81.20175970466401,
         "srim": 16.4770705526764,
@@ -214,12 +214,12 @@
         "roic": 0.10804451375650839,
         "roic_spread": -0.10095548624349163,
         "confidence": "낮음(모델 발산)",
-        "discrepancy_pct": 179.3403801306215,
+        "discrepancy_pct": 175.47419781210542,
         "signal": "과열 경고"
       },
       "inputs": {
         "ticker": "COIN",
-        "price": 160.4,
+        "price": 158.18,
         "shares_outstanding": 287209000.0,
         "fcf": 2407562752.0,
         "cash": 10438001664.0,
@@ -246,7 +246,7 @@
       "market": "US",
       "name": "Joby Aviaton",
       "currency": "USD",
-      "price": 9.7,
+      "price": 9.55,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -264,7 +264,7 @@
       },
       "inputs": {
         "ticker": "JOBY",
-        "price": 9.7,
+        "price": 9.55,
         "shares_outstanding": 826240955.0,
         "fcf": -380630368.0,
         "cash": 2466189056.0,
@@ -293,7 +293,7 @@
       "market": "US",
       "name": "Bakkt",
       "currency": "USD",
-      "price": 8.74,
+      "price": 8.87,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -311,7 +311,7 @@
       },
       "inputs": {
         "ticker": "BKKT",
-        "price": 8.74,
+        "price": 8.87,
         "shares_outstanding": 25523039.0,
         "fcf": -11740250.0,
         "cash": 81899000.0,
@@ -341,7 +341,7 @@
       "market": "US",
       "name": "abcellera",
       "currency": "USD",
-      "price": 5.6599,
+      "price": 5.63,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -359,7 +359,7 @@
       },
       "inputs": {
         "ticker": "ABCL",
-        "price": 5.6599,
+        "price": 5.63,
         "shares_outstanding": 298707082.0,
         "fcf": -114039248.0,
         "cash": 504732000.0,
@@ -389,7 +389,7 @@
       "market": "US",
       "name": "Microstrategy",
       "currency": "USD",
-      "price": 106.615,
+      "price": 103.84,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -407,7 +407,7 @@
       },
       "inputs": {
         "ticker": "MSTR",
-        "price": 106.615,
+        "price": 103.84,
         "shares_outstanding": 277660000.0,
         "fcf": -8699502592.0,
         "cash": 2207218944.0,
@@ -437,7 +437,7 @@
       "market": "US",
       "name": "Tilley",
       "currency": "USD",
-      "price": 4.6,
+      "price": 4.61,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -455,7 +455,7 @@
       },
       "inputs": {
         "ticker": "TLRY",
-        "price": 4.6,
+        "price": 4.61,
         "shares_outstanding": 89032601.0,
         "fcf": -31062250.0,
         "cash": 425655008.0,
@@ -485,7 +485,7 @@
       "market": "US",
       "name": "Smr",
       "currency": "USD",
-      "price": 10.95,
+      "price": 10.86,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -503,7 +503,7 @@
       },
       "inputs": {
         "ticker": "SMR",
-        "price": 10.95,
+        "price": 10.86,
         "shares_outstanding": 163731673.0,
         "fcf": -161970368.0,
         "cash": 890129024.0,
@@ -533,7 +533,7 @@
       "market": "US",
       "name": "SpaceX",
       "currency": "USD",
-      "price": 149.81,
+      "price": 156.11,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -551,7 +551,7 @@
       },
       "inputs": {
         "ticker": "SPCX",
-        "price": 149.81,
+        "price": 156.11,
         "shares_outstanding": 9649000000.0,
         "fcf": -14121000000.0,
         "cash": 23675000832.0,
@@ -581,7 +581,7 @@
       "market": "US",
       "name": "PoetTechnology",
       "currency": "USD",
-      "price": 11.43,
+      "price": 10.73,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -599,7 +599,7 @@
       },
       "inputs": {
         "ticker": "POET",
-        "price": 11.43,
+        "price": 10.73,
         "shares_outstanding": 93156184.0,
         "fcf": -42376272.0,
         "cash": 429136448.0,
@@ -628,7 +628,7 @@
       "market": "US",
       "name": "Circle",
       "currency": "USD",
-      "price": 76.075,
+      "price": 75.68,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -646,7 +646,7 @@
       },
       "inputs": {
         "ticker": "CRCL",
-        "price": 76.075,
+        "price": 75.68,
         "shares_outstanding": 158699000.0,
         "fcf": -141372752.0,
         "cash": 1517264000.0,

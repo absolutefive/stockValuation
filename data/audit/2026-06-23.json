@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-06-23",
-  "generated_at": "2026-06-23T13:32:58.957338+00:00",
+  "generated_at": "2026-06-23T22:57:44.673363+00:00",
   "provider": "yahoo",
   "purpose": "DCF/S-RIM/PEG 계산 과정 및 입력 데이터 출처 검증 기록",
   "assumptions": {
@@ -23,7 +23,7 @@
       "market": "US",
       "name": "Apple",
       "currency": "USD",
-      "price": 298.21,
+      "price": 294.3,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -249,7 +249,7 @@
       "market": "US",
       "name": "Tesla",
       "currency": "USD",
-      "price": 391.84,
+      "price": 381.61,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -475,7 +475,7 @@
       "market": "US",
       "name": "Palantir",
       "currency": "USD",
-      "price": 119.5,
+      "price": 116.7,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -657,11 +657,11 @@
           }
         },
         "peg": {
-          "value": 44.5,
+          "value": 44.0,
           "applicable": true,
           "reason": null,
           "inputs_used": {
-            "eps": 0.89,
+            "eps": 0.88,
             "eps_growth": 3.25
           },
           "assumptions_used": {
@@ -684,8 +684,8 @@
             {
               "label": "1주당 적정주가 = EPS × 적정 PER",
               "formula": "PEG = EPS × fair_PER",
-              "substitution": "0.8900 × 50.0000",
-              "result": 44.5
+              "substitution": "0.8800 × 50.0000",
+              "result": 44.0
             }
           ],
           "input_sources": {
@@ -701,7 +701,7 @@
       "market": "US",
       "name": "Sattlelogic",
       "currency": "USD",
-      "price": 5.8276,
+      "price": 5.56,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -819,7 +819,7 @@
       "market": "US",
       "name": "Coinbase",
       "currency": "USD",
-      "price": 160.4,
+      "price": 158.18,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1045,7 +1045,7 @@
       "market": "US",
       "name": "Joby Aviaton",
       "currency": "USD",
-      "price": 9.7,
+      "price": 9.55,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1163,7 +1163,7 @@
       "market": "US",
       "name": "Bakkt",
       "currency": "USD",
-      "price": 8.74,
+      "price": 8.87,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1281,7 +1281,7 @@
       "market": "US",
       "name": "abcellera",
       "currency": "USD",
-      "price": 5.6599,
+      "price": 5.63,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1399,7 +1399,7 @@
       "market": "US",
       "name": "Microstrategy",
       "currency": "USD",
-      "price": 106.615,
+      "price": 103.84,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1517,7 +1517,7 @@
       "market": "US",
       "name": "Tilley",
       "currency": "USD",
-      "price": 4.6,
+      "price": 4.61,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1635,7 +1635,7 @@
       "market": "US",
       "name": "Smr",
       "currency": "USD",
-      "price": 10.95,
+      "price": 10.86,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1753,7 +1753,7 @@
       "market": "US",
       "name": "SpaceX",
       "currency": "USD",
-      "price": 149.81,
+      "price": 156.11,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1871,7 +1871,7 @@
       "market": "US",
       "name": "PoetTechnology",
       "currency": "USD",
-      "price": 11.43,
+      "price": 10.73,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1989,7 +1989,7 @@
       "market": "US",
       "name": "Circle",
       "currency": "USD",
-      "price": 76.075,
+      "price": 75.68,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
