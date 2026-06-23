@@ -52,7 +52,19 @@ class YahooProvider(DataProvider):
     name = "yahoo"
 
     def fetch_inputs(self, ticker: str) -> CompanyInputs:
+        return self.fetch_inputs_with_sources(ticker)[0]
+
+    def fetch_inputs_with_sources(
+        self, ticker: str
+    ) -> tuple[CompanyInputs, dict[str, str]]:
+        """입력 데이터와, 각 필드가 실제로 채택된 출처 맵을 함께 반환한다.
+
+        yfinance는 동일 항목을 ``info`` 요약과 재무제표 양쪽에서 제공하므로,
+        폴백 우선순위 중 실제로 채택된 경로를 출처 맵에 기록해 검증을 돕는다.
+        원천 데이터는 SEC EDGAR 10-K/10-Q 공시 기반이다.
+        """
         t = yf.Ticker(ticker)
+        sources: dict[str, str] = {}
         info: dict = {}
         try:
             info = t.info or {}
@@ -67,9 +79,14 @@ class YahooProvider(DataProvider):
             )
 
         price = info.get("currentPrice") or info.get("regularMarketPrice")
-        if price is None:
+        if price is not None:
+            sources["price"] = (
+                "yfinance Ticker.info['currentPrice'|'regularMarketPrice']"
+            )
+        else:
             try:
                 price = float(t.fast_info["last_price"])
+                sources["price"] = "yfinance Ticker.fast_info['last_price']"
             except Exception:
                 price = None
 
@@ -79,24 +96,47 @@ class YahooProvider(DataProvider):
 
         # 완전 희석 주식수 우선, 없으면 상장 주식수로 폴백
         shares = _latest(income, "Diluted Average Shares")
-        if not shares:
+        if shares:
+            sources["shares_outstanding"] = (
+                "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)"
+            )
+        else:
             shares = info.get("impliedSharesOutstanding") or info.get("sharesOutstanding")
+            if shares:
+                sources["shares_outstanding"] = (
+                    "yfinance Ticker.info['impliedSharesOutstanding'|'sharesOutstanding']"
+                )
 
         fcf = info.get("freeCashflow")
-        if fcf is None:
+        if fcf is not None:
+            sources["fcf"] = "yfinance Ticker.info['freeCashflow'] (TTM)"
+        else:
             fcf = _latest(cashflow, "Free Cash Flow")
+            if fcf is not None:
+                sources["fcf"] = "yfinance cashflow['Free Cash Flow'] (최신 회계연도)"
 
         cash = info.get("totalCash")
-        if cash is None:
+        if cash is not None:
+            sources["cash"] = "yfinance Ticker.info['totalCash']"
+        else:
             cash = _latest(
                 balance,
                 "Cash Cash Equivalents And Short Term Investments",
                 "Cash And Cash Equivalents",
             )
+            if cash is not None:
+                sources["cash"] = (
+                    "yfinance balance_sheet['Cash Cash Equivalents And Short Term "
+                    "Investments'|'Cash And Cash Equivalents'] (최신)"
+                )
 
         total_debt = info.get("totalDebt")
-        if total_debt is None:
+        if total_debt is not None:
+            sources["total_debt"] = "yfinance Ticker.info['totalDebt']"
+        else:
             total_debt = _latest(balance, "Total Debt")
+            if total_debt is not None:
+                sources["total_debt"] = "yfinance balance_sheet['Total Debt'] (최신)"
 
         book_value = _latest(
             balance,
@@ -104,35 +144,74 @@ class YahooProvider(DataProvider):
             "Common Stock Equity",
             "Total Equity Gross Minority Interest",
         )
-        if book_value is None and info.get("bookValue") and shares:
+        if book_value is not None:
+            sources["book_value"] = (
+                "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|"
+                "'Total Equity Gross Minority Interest'] (최신)"
+            )
+        elif info.get("bookValue") and shares:
             book_value = float(info["bookValue"]) * shares
+            sources["book_value"] = (
+                "yfinance Ticker.info['bookValue'] × shares_outstanding (BPS 환산)"
+            )
 
         net_income = info.get("netIncomeToCommon")
-        if net_income is None:
+        if net_income is not None:
+            sources["net_income"] = "yfinance Ticker.info['netIncomeToCommon'] (TTM)"
+        else:
             net_income = _latest(income, "Net Income", "Net Income Common Stockholders")
+            if net_income is not None:
+                sources["net_income"] = "yfinance income_stmt['Net Income'] (최신 회계연도)"
 
         ebit = info.get("ebit")
-        if ebit is None:
+        if ebit is not None:
+            sources["ebit"] = "yfinance Ticker.info['ebit']"
+        else:
             ebit = _latest(income, "EBIT", "Operating Income")
+            if ebit is not None:
+                sources["ebit"] = "yfinance income_stmt['EBIT'|'Operating Income'] (최신)"
+
         # 유효 법인세율 = 법인세 ÷ 세전이익 (없으면 모델이 21% 기본 가정 사용)
         tax_rate = None
         tax_provision = _latest(income, "Tax Provision", "Income Tax Expense")
         pretax = _latest(income, "Pretax Income", "Income Before Tax")
         if tax_provision is not None and pretax and pretax > 0:
             tax_rate = tax_provision / pretax
+            sources["tax_rate"] = (
+                "yfinance income_stmt['Tax Provision'] / ['Pretax Income']"
+            )
 
         roe = info.get("returnOnEquity")
-        if roe is None and book_value and net_income is not None:
+        if roe is not None:
+            sources["roe"] = "yfinance Ticker.info['returnOnEquity']"
+        elif book_value and net_income is not None:
             roe = net_income / book_value
+            sources["roe"] = (
+                "yfinance income_stmt['Net Income'] / book_value (직접 환산)"
+            )
 
         eps = info.get("trailingEps")
+        if eps is not None:
+            sources["eps"] = "yfinance Ticker.info['trailingEps'] (TTM)"
+
         eps_growth = info.get("earningsGrowth")
-        if eps_growth is None:
+        if eps_growth is not None:
+            sources["eps_growth"] = "yfinance Ticker.info['earningsGrowth']"
+        else:
             trailing, forward = info.get("trailingEps"), info.get("forwardEps")
             if trailing and forward and trailing > 0:
                 eps_growth = forward / trailing - 1
+                sources["eps_growth"] = (
+                    "yfinance Ticker.info['forwardEps']/['trailingEps'] − 1 (추정)"
+                )
 
-        return CompanyInputs(
+        beta = info.get("beta")
+        sources["beta"] = (
+            "yfinance Ticker.info['beta']" if beta is not None
+            else "기본값 1.0 (info['beta'] 부재)"
+        )
+
+        inputs = CompanyInputs(
             ticker=ticker.upper(),
             name=info.get("shortName") or ticker.upper(),
             currency=info.get("currency") or "USD",
@@ -148,8 +227,9 @@ class YahooProvider(DataProvider):
             roe=float(roe) if roe is not None else None,
             eps=float(eps) if eps is not None else None,
             eps_growth=float(eps_growth) if eps_growth is not None else None,
-            beta=float(info.get("beta") or 1.0),
+            beta=float(beta or 1.0),
         )
+        return inputs, sources
 
     def fetch_price_history(self, ticker: str, period: str = "3y") -> pd.DataFrame:
         df = yf.Ticker(ticker).history(period=period, auto_adjust=True)
