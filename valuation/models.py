@@ -219,12 +219,23 @@ def roic_value(inputs: CompanyInputs) -> Optional[float]:
     return nopat / invested
 
 
-_CONFIDENCE_RANK = {
-    "높음": 0,
-    "보통": 1,
-    "낮음(모델 발산)": 2,
-    "낮음(교차검증 불가)": 2,
-}
+def _apply_growth_gate(
+    inputs: CompanyInputs, a: Assumptions, weights: dict[str, float]
+) -> tuple[dict[str, float], Optional[float], Optional[float], bool]:
+    """성장 진위 게이트: ROIC가 요구수익률을 밑돌면 성장 기반 모델(DCF·PEG)
+    가중을 축소한 새 가중치를 돌려준다.
+
+    ROIC는 할인율·성장률 섭동과 무관하므로 게이트 판정은 시나리오 전반에서
+    동일하다. 복합가·시나리오 밴드·민감도 표가 같은 가중을 쓰도록 단일화한다.
+    반환: (조정된 가중치, roic, roic_spread, 게이트 발동 여부)
+    """
+    roic = roic_value(inputs)
+    if roic is None:
+        return weights, None, None, False
+    spread = roic - a.cost_of_equity(inputs.beta)
+    if a.growth_gate and spread < 0:
+        return {**weights, "dcf": weights["dcf"] * 0.4, "peg": weights["peg"] * 0.4}, roic, spread, True
+    return weights, roic, spread, False
 
 
 def _downgrade_confidence(level: str, reason: str) -> str:
@@ -349,16 +360,12 @@ def evaluate(
 
     # 성장 진위 게이트: ROIC가 요구수익률을 밑돌면 성장은 가치를 파괴하므로
     # 성장 기반 모델(DCF·PEG) 가중을 축소하고 자산가치(S-RIM)에 무게를 둔다.
-    result.roic = roic_value(inputs)
-    if result.roic is not None:
-        result.roic_spread = result.roic - a.cost_of_equity(inputs.beta)
-        if a.growth_gate and result.roic_spread < 0:
-            w = {**w, "dcf": w["dcf"] * 0.4, "peg": w["peg"] * 0.4}
-            result.notes.append(
-                f"ROIC {result.roic:.1%} < 요구수익률 "
-                f"{a.cost_of_equity(inputs.beta):.1%}: 성장이 가치를 창출하지 못해 "
-                "DCF/PEG 가중을 축소했습니다 (자산가치 중심 평가)"
-            )
+    w, result.roic, result.roic_spread, gated = _apply_growth_gate(inputs, a, w)
+    if gated:
+        result.notes.append(
+            f"ROIC {result.roic:.1%} < 요구수익률 {a.cost_of_equity(inputs.beta):.1%}: "
+            "성장이 가치를 창출하지 못해 DCF/PEG 가중을 축소했습니다 (자산가치 중심 평가)"
+        )
 
     result.composite = _composite_from(values, w)
     result.dispersion = _dispersion(values)
@@ -406,7 +413,8 @@ def sensitivity_table(
     행: 할인율 변화, 열: 성장률 변화. 영구성장률 가정의 민감도 문제를
     투자자가 직접 확인할 수 있게 한다.
     """
-    w = {"dcf": 1.0, "srim": 1.0, "peg": 1.0}
+    # 헤드라인 복합가와 동일한 가중(성장 게이트 반영)으로 행렬을 채워 일관성을 맞춘다.
+    w, _, _, _ = _apply_growth_gate(inputs, base, {"dcf": 1.0, "srim": 1.0, "peg": 1.0})
     rows: list[list[Optional[float]]] = []
     for dr in rate_steps:
         row: list[Optional[float]] = []

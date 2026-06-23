@@ -168,6 +168,13 @@ def test_roic_value_and_growth_gate():
     assert no_data.roic is None and no_data.roic_spread is None
 
 
+def test_sensitivity_center_matches_composite_when_gated():
+    """게이트 발동 종목에서도 민감도 표 중심셀이 헤드라인 복합가와 일치한다."""
+    weak = CompanyInputs(**{**SAMPLE.__dict__, "ebit": 100_000, "tax_rate": 0.21})
+    matrix = sensitivity_table(weak, FLAT)  # 기본 5x5, 중심 = (할인율 0, 성장률 0)
+    assert matrix[2][2] == pytest.approx(evaluate(weak, FLAT).composite)
+
+
 def test_confidence_downgrade_steps():
     """이익의 질 경고는 신뢰도를 한 단계만 낮추고, 이미 낮으면 유지한다."""
     assert _downgrade_confidence("높음", "이익질 의심") == "보통(이익질 의심)"
