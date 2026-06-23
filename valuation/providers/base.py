@@ -36,6 +36,17 @@ class DataProvider(ABC):
         - 구할 수 없는 항목은 None으로 둔다 (모델이 해당 항목만 제외)
         """
 
+    def fetch_inputs_with_sources(
+        self, ticker: str
+    ) -> tuple[CompanyInputs, dict[str, str]]:
+        """입력 데이터와 함께, 각 필드가 어느 원천에서 왔는지 출처 맵을 반환한다.
+
+        반환되는 출처 맵은 ``{필드명: 출처 설명}`` 형태로, 계산값 검증(audit)
+        시 "이 숫자가 어디서 왔는가"를 추적하는 데 쓰인다. 출처 추적을
+        지원하지 않는 프로바이더는 빈 맵을 반환한다(모델 계산에는 영향 없음).
+        """
+        return self.fetch_inputs(ticker), {}
+
     def fetch_price_history(self, ticker: str, period: str = "3y") -> pd.DataFrame:
         """오버레이 차트용 일별 종가 이력 (Close 컬럼, DatetimeIndex).
 

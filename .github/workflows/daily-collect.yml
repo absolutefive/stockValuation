@@ -42,11 +42,11 @@ jobs:
       - name: 보고서 생성
         run: python -m valuation.report
 
-      - name: 스냅샷 커밋
+      - name: 스냅샷·계산기록 커밋
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/snapshots
+          git add data/snapshots data/audit
           if git diff --cached --quiet; then
             echo "변경된 스냅샷 없음 — 커밋 생략"
           else

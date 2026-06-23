@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 
 @dataclass
@@ -69,34 +69,283 @@ class ValuationResult:
     notes: list[str] = field(default_factory=list)
 
 
+def _n(x: Optional[float]) -> str:
+    """계산 과정 기록용 숫자 포맷 (대입식 문자열에 사용)."""
+    if x is None:
+        return "None"
+    if abs(x) >= 1000:
+        return f"{x:,.2f}"
+    return f"{x:.4f}"
+
+
+def _step(label: str, formula: str, substitution: str, result: Optional[float],
+          **extra: Any) -> dict[str, Any]:
+    """계산 단계 1개를 기록한다(기호 수식 + 실제 숫자 대입 + 결과)."""
+    step = {"label": label, "formula": formula,
+            "substitution": substitution, "result": result}
+    step.update(extra)
+    return step
+
+
+def _cost_of_equity_steps(a: Assumptions, beta: float) -> tuple[float, list[dict[str, Any]]]:
+    """자기자본비용(요구수익률) 산출 과정과 결과를 함께 반환한다."""
+    floor = a.terminal_growth + 0.01
+    if a.discount_rate_override is not None:
+        base = a.discount_rate_override
+        step = _step(
+            "요구수익률 r (할인율 직접 지정)",
+            "r = max(discount_rate_override, terminal_growth + 0.01)",
+            f"max({_n(a.discount_rate_override)}, {_n(a.terminal_growth)} + 0.01)",
+            max(base, floor),
+        )
+    else:
+        base = a.risk_free_rate + beta * a.equity_risk_premium
+        step = _step(
+            "요구수익률 r (CAPM)",
+            "r = max(rf + β × ERP, terminal_growth + 0.01)",
+            f"max({_n(a.risk_free_rate)} + {_n(beta)} × {_n(a.equity_risk_premium)}, "
+            f"{_n(a.terminal_growth)} + 0.01)",
+            max(base, floor),
+        )
+    return max(base, floor), [step]
+
+
+def dcf_explain(inputs: CompanyInputs, a: Assumptions) -> dict[str, Any]:
+    """DCF 1주당 내재가치를 단계별 계산 과정과 함께 산출한다.
+
+    `dcf_value`가 이 함수에 위임하므로, 기록된 과정과 실제 산출값은 항상 일치한다.
+    반환 dict: value / applicable / reason / inputs_used / assumptions_used / steps.
+    """
+    inputs_used = {
+        "fcf": inputs.fcf,
+        "shares_outstanding": inputs.shares_outstanding,
+        "cash": inputs.cash,
+        "total_debt": inputs.total_debt,
+        "beta": inputs.beta,
+        "fcf_growth": inputs.fcf_growth,
+        "eps_growth": inputs.eps_growth,
+    }
+    assumptions_used = {
+        "risk_free_rate": a.risk_free_rate,
+        "equity_risk_premium": a.equity_risk_premium,
+        "projection_years": a.projection_years,
+        "terminal_growth": a.terminal_growth,
+        "fcf_growth_cap": a.fcf_growth_cap,
+        "discount_rate_override": a.discount_rate_override,
+    }
+    base = {"value": None, "applicable": False, "inputs_used": inputs_used,
+            "assumptions_used": assumptions_used, "steps": []}
+
+    if not inputs.fcf or not inputs.shares_outstanding or inputs.fcf <= 0:
+        base["reason"] = "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용"
+        return base
+
+    r, steps = _cost_of_equity_steps(a, inputs.beta)
+
+    if inputs.fcf_growth is not None:
+        raw_growth, growth_source = inputs.fcf_growth, "inputs.fcf_growth"
+    elif inputs.eps_growth is not None:
+        raw_growth, growth_source = inputs.eps_growth, "inputs.eps_growth (FCF 성장률 부재 시 대용)"
+    else:
+        raw_growth, growth_source = a.terminal_growth, "terminal_growth (성장률 데이터 부재 시 기본값)"
+    growth = max(min(raw_growth, a.fcf_growth_cap), -0.10)
+    steps.append(_step(
+        f"적용 성장률 g (출처: {growth_source})",
+        "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+        f"max(min({_n(raw_growth)}, {_n(a.fcf_growth_cap)}), -0.10)",
+        growth,
+    ))
+
+    pv = 0.0
+    fcf_t = inputs.fcf
+    projection: list[dict[str, Any]] = []
+    for t in range(1, a.projection_years + 1):
+        fcf_t *= 1 + growth
+        pv_t = fcf_t / (1 + r) ** t
+        pv += pv_t
+        projection.append({
+            "year": t,
+            "projected_fcf": fcf_t,
+            "discount_factor": (1 + r) ** t,
+            "present_value": pv_t,
+        })
+    steps.append(_step(
+        f"추정기간({a.projection_years}년) FCF 현재가치 합 ΣPV",
+        "PV_t = FCF₀×(1+g)^t / (1+r)^t,  ΣPV = Σ PV_t",
+        f"FCF₀={_n(inputs.fcf)}, g={_n(growth)}, r={_n(r)} → 연도별 현가 합산",
+        pv,
+        projection=projection,
+    ))
+
+    terminal = fcf_t * (1 + a.terminal_growth) / (r - a.terminal_growth)
+    terminal_pv = terminal / (1 + r) ** a.projection_years
+    pv += terminal_pv
+    steps.append(_step(
+        "영구가치(Terminal Value) 현재가치",
+        "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+        f"{_n(fcf_t)}×(1+{_n(a.terminal_growth)})/({_n(r)}-{_n(a.terminal_growth)}) "
+        f"÷ (1+{_n(r)})^{a.projection_years}",
+        terminal_pv,
+        terminal_value=terminal,
+    ))
+    steps.append(_step(
+        "기업가치 = ΣPV + PV(TV)",
+        "EV = ΣPV(FCF) + PV(TV)",
+        f"{_n(pv - terminal_pv)} + {_n(terminal_pv)}",
+        pv,
+    ))
+
+    equity_value = pv + (inputs.cash or 0.0) - (inputs.total_debt or 0.0)
+    steps.append(_step(
+        "주주가치 = 기업가치 + 현금 - 총부채",
+        "Equity = EV + cash - total_debt",
+        f"{_n(pv)} + {_n(inputs.cash or 0.0)} - {_n(inputs.total_debt or 0.0)}",
+        equity_value,
+    ))
+
+    if equity_value <= 0:
+        base["steps"] = steps
+        base["applicable"] = True
+        base["reason"] = "산출된 주주가치가 0 이하 → DCF 미적용"
+        return base
+
+    value = equity_value / inputs.shares_outstanding
+    steps.append(_step(
+        "1주당 내재가치 = 주주가치 / 주식수",
+        "DCF = Equity / shares_outstanding",
+        f"{_n(equity_value)} / {_n(inputs.shares_outstanding)}",
+        value,
+    ))
+    return {"value": value, "applicable": True, "reason": None,
+            "inputs_used": inputs_used, "assumptions_used": assumptions_used,
+            "steps": steps}
+
+
+def srim_explain(inputs: CompanyInputs, a: Assumptions) -> dict[str, Any]:
+    """S-RIM(잔여이익모델) 1주당 내재가치를 단계별 계산 과정과 함께 산출한다."""
+    inputs_used = {
+        "book_value": inputs.book_value,
+        "roe": inputs.roe,
+        "shares_outstanding": inputs.shares_outstanding,
+        "beta": inputs.beta,
+    }
+    assumptions_used = {
+        "risk_free_rate": a.risk_free_rate,
+        "equity_risk_premium": a.equity_risk_premium,
+        "terminal_growth": a.terminal_growth,
+        "srim_persistence": a.srim_persistence,
+        "discount_rate_override": a.discount_rate_override,
+    }
+    base = {"value": None, "applicable": False, "inputs_used": inputs_used,
+            "assumptions_used": assumptions_used, "steps": []}
+
+    if (
+        inputs.book_value is None
+        or inputs.roe is None
+        or not inputs.shares_outstanding
+        or inputs.book_value <= 0
+    ):
+        base["reason"] = "자본총계 또는 ROE 데이터 부족(자본총계 ≤ 0 포함) → S-RIM 미적용"
+        return base
+
+    r, steps = _cost_of_equity_steps(a, inputs.beta)
+
+    excess_return = inputs.book_value * (inputs.roe - r)
+    steps.append(_step(
+        "초과이익 = 자본총계 × (ROE − r)",
+        "ExcessReturn = BV × (ROE − r)",
+        f"{_n(inputs.book_value)} × ({_n(inputs.roe)} − {_n(r)})",
+        excess_return,
+    ))
+
+    w = a.srim_persistence
+    if w >= 1.0:
+        value_total = inputs.book_value + excess_return / r
+        steps.append(_step(
+            "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+            "Value = BV + ExcessReturn / r",
+            f"{_n(inputs.book_value)} + {_n(excess_return)} / {_n(r)}",
+            value_total,
+        ))
+    else:
+        value_total = inputs.book_value + excess_return * w / (1 + r - w)
+        steps.append(_step(
+            f"내재 자기자본가치 (지속계수 w={_n(w)})",
+            "Value = BV + ExcessReturn × w / (1 + r − w)",
+            f"{_n(inputs.book_value)} + {_n(excess_return)} × {_n(w)} "
+            f"/ (1 + {_n(r)} − {_n(w)})",
+            value_total,
+        ))
+
+    if value_total <= 0:
+        base["steps"] = steps
+        base["applicable"] = True
+        base["reason"] = "산출된 자기자본가치가 0 이하 → S-RIM 미적용"
+        return base
+
+    value = value_total / inputs.shares_outstanding
+    steps.append(_step(
+        "1주당 내재가치 = 자기자본가치 / 주식수",
+        "S-RIM = Value / shares_outstanding",
+        f"{_n(value_total)} / {_n(inputs.shares_outstanding)}",
+        value,
+    ))
+    return {"value": value, "applicable": True, "reason": None,
+            "inputs_used": inputs_used, "assumptions_used": assumptions_used,
+            "steps": steps}
+
+
+def peg_explain(inputs: CompanyInputs, a: Assumptions) -> dict[str, Any]:
+    """PEG 기준 1주당 적정주가를 단계별 계산 과정과 함께 산출한다."""
+    inputs_used = {"eps": inputs.eps, "eps_growth": inputs.eps_growth}
+    assumptions_used = {"fair_peg": a.fair_peg, "peg_growth_cap": a.peg_growth_cap}
+    base = {"value": None, "applicable": False, "inputs_used": inputs_used,
+            "assumptions_used": assumptions_used, "steps": []}
+
+    if not inputs.eps or inputs.eps <= 0:
+        base["reason"] = "EPS가 없거나 적자(≤ 0) → PEG 미적용"
+        return base
+    if inputs.eps_growth is None or inputs.eps_growth <= 0:
+        base["reason"] = "예상 EPS 성장률이 없거나 0 이하 → PEG 미적용"
+        return base
+
+    capped_growth = min(inputs.eps_growth, a.peg_growth_cap)
+    growth_pct = capped_growth * 100
+    fair_per = growth_pct * a.fair_peg
+    value = inputs.eps * fair_per
+    steps = [
+        _step(
+            "적용 성장률 (상한 적용 후, %)",
+            "g% = min(eps_growth, peg_growth_cap) × 100",
+            f"min({_n(inputs.eps_growth)}, {_n(a.peg_growth_cap)}) × 100",
+            growth_pct,
+        ),
+        _step(
+            "적정 PER = 성장률(%) × 적정 PEG",
+            "fair_PER = g% × fair_peg",
+            f"{_n(growth_pct)} × {_n(a.fair_peg)}",
+            fair_per,
+        ),
+        _step(
+            "1주당 적정주가 = EPS × 적정 PER",
+            "PEG = EPS × fair_PER",
+            f"{_n(inputs.eps)} × {_n(fair_per)}",
+            value,
+        ),
+    ]
+    return {"value": value, "applicable": True, "reason": None,
+            "inputs_used": inputs_used, "assumptions_used": assumptions_used,
+            "steps": steps}
+
+
 def dcf_value(inputs: CompanyInputs, a: Assumptions) -> Optional[float]:
     """현금흐름할인법 1주당 내재가치.
 
     미래 FCF를 자기자본비용으로 할인한 기업가치에 현금을 가산하고
     총부채를 차감한 주주가치를 희석 주식수로 나눈다.
+    계산 과정 전체는 `dcf_explain`이 기록하며, 본 함수는 그 결과값만 반환한다.
     """
-    if not inputs.fcf or not inputs.shares_outstanding or inputs.fcf <= 0:
-        return None
-
-    r = a.cost_of_equity(inputs.beta)
-    growth = inputs.fcf_growth if inputs.fcf_growth is not None else inputs.eps_growth
-    if growth is None:
-        growth = a.terminal_growth
-    growth = max(min(growth, a.fcf_growth_cap), -0.10)
-
-    pv = 0.0
-    fcf_t = inputs.fcf
-    for t in range(1, a.projection_years + 1):
-        fcf_t *= 1 + growth
-        pv += fcf_t / (1 + r) ** t
-
-    terminal = fcf_t * (1 + a.terminal_growth) / (r - a.terminal_growth)
-    pv += terminal / (1 + r) ** a.projection_years
-
-    equity_value = pv + (inputs.cash or 0.0) - (inputs.total_debt or 0.0)
-    if equity_value <= 0:
-        return None
-    return equity_value / inputs.shares_outstanding
+    return dcf_explain(inputs, a)["value"]
 
 
 def srim_value(inputs: CompanyInputs, a: Assumptions) -> Optional[float]:
@@ -104,25 +353,9 @@ def srim_value(inputs: CompanyInputs, a: Assumptions) -> Optional[float]:
 
     자본총계에 초과이익(ROE - 요구수익률)의 현재가치를 더한다.
     지속계수 w < 1 이면 초과이익이 매년 w 비율로 감소한다고 가정한다.
+    계산 과정 전체는 `srim_explain`이 기록한다.
     """
-    if (
-        inputs.book_value is None
-        or inputs.roe is None
-        or not inputs.shares_outstanding
-        or inputs.book_value <= 0
-    ):
-        return None
-
-    r = a.cost_of_equity(inputs.beta)
-    excess_return = inputs.book_value * (inputs.roe - r)
-    w = a.srim_persistence
-    if w >= 1.0:
-        value = inputs.book_value + excess_return / r
-    else:
-        value = inputs.book_value + excess_return * w / (1 + r - w)
-    if value <= 0:
-        return None
-    return value / inputs.shares_outstanding
+    return srim_explain(inputs, a)["value"]
 
 
 def peg_value(inputs: CompanyInputs, a: Assumptions) -> Optional[float]:
@@ -130,15 +363,9 @@ def peg_value(inputs: CompanyInputs, a: Assumptions) -> Optional[float]:
 
     적정 PER = 예상 EPS 성장률(%) x 적정 PEG 로 두고 EPS에 곱한다.
     성장률이 0 이하이거나 EPS가 적자면 성장주 모델 적용이 불가하다.
+    계산 과정 전체는 `peg_explain`이 기록한다.
     """
-    if not inputs.eps or inputs.eps <= 0:
-        return None
-    if inputs.eps_growth is None or inputs.eps_growth <= 0:
-        return None
-
-    growth_pct = min(inputs.eps_growth, a.peg_growth_cap) * 100
-    fair_per = growth_pct * a.fair_peg
-    return inputs.eps * fair_per
+    return peg_explain(inputs, a)["value"]
 
 
 def classify_signal(discrepancy_pct: Optional[float]) -> str:
