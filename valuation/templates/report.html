@@ -131,6 +131,11 @@ function fmtPct(v) {
   if (v === null || v === undefined || isNaN(v)) return "–";
   return (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
 }
+function fmtRatioPct(v, signed) {
+  if (v === null || v === undefined || isNaN(v)) return "–";
+  const p = v * 100;
+  return (signed && p >= 0 ? "+" : "") + p.toFixed(1) + "%";
+}
 function sparkline(history) {
   const pts = history.map(h => h.discrepancy_pct).filter(v => v !== null && !isNaN(v));
   if (pts.length < 2) return '<span class="nm">–</span>';
@@ -192,6 +197,7 @@ const COLS = [
   { k: "composite", t: "복합 적정가" },
   { k: "discrepancy_pct", t: "괴리율" },
   { k: "signal", t: "신호" },
+  { k: "confidence", t: "신뢰도", cls: "l hide-sm" },
   { k: "spark", t: "추세", sortable: false },
 ];
 
@@ -217,6 +223,7 @@ function renderTable() {
       <td class="num">${fmtMoney(L.composite, t.currency)}</td>
       <td class="num ${cls}">${fmtPct(L.discrepancy_pct)}</td>
       <td><span class="badge" style="background:${SIGNAL_COLORS[sig] || '#aab2c0'}">${sig}</span></td>
+      <td class="l hide-sm">${L.confidence || "-"}</td>
       <td>${sparkline(t.history)}</td>
     </tr>`;
   });
@@ -246,16 +253,19 @@ function selectTicker(tk) {
   host.innerHTML = `<div class="detail">
     <button class="close" id="closeDetail">닫기 ✕</button>
     <h2>${t.ticker} <span class="nm">${t.name || ""}</span> <span class="mkt">${t.market}</span></h2>
-    <div class="sub">신호 <span class="badge" style="background:${SIGNAL_COLORS[L.signal]||'#aab2c0'}">${L.signal}</span> · 기준일 ${L.date}</div>
+    <div class="sub">신호 <span class="badge" style="background:${SIGNAL_COLORS[L.signal]||'#aab2c0'}">${L.signal}</span> · 신뢰도 ${L.confidence || "–"} · 기준일 ${L.date}</div>
     <div class="grid">
       <div class="chart-box"><canvas id="detailChart"></canvas></div>
       <dl class="kv">
         <dt>현재가</dt><dd>${fmtMoney(L.price, t.currency)}</dd>
         <dt>복합 적정가</dt><dd>${fmtMoney(L.composite, t.currency)}</dd>
+        <dt>적정가 밴드</dt><dd>${fmtMoney(L.composite_low, t.currency)} ~ ${fmtMoney(L.composite_high, t.currency)}</dd>
         <dt>괴리율</dt><dd class="${L.discrepancy_pct>=0?'pos':'neg'}">${fmtPct(L.discrepancy_pct)}</dd>
         <dt>DCF</dt><dd>${fmtMoney(L.dcf, t.currency)}</dd>
         <dt>S-RIM</dt><dd>${fmtMoney(L.srim, t.currency)}</dd>
         <dt>PEG</dt><dd>${fmtMoney(L.peg, t.currency)}</dd>
+        <dt>ROIC 스프레드</dt><dd class="${(L.roic_spread||0)>=0?'pos':'neg'}">${fmtRatioPct(L.roic_spread, true)}</dd>
+        <dt>FCF 전환율</dt><dd>${fmtRatioPct(L.fcf_conversion, false)}</dd>
       </dl>
     </div>
     ${(t.notes && t.notes.length) ? `<div class="notes">⚠ ${t.notes.join(" · ")}</div>` : ""}
@@ -281,6 +291,10 @@ function drawChart(t) {
           backgroundColor: 'rgba(47,109,240,.08)', fill: true, tension: .25, pointRadius: 2 },
         { label: '복합 적정가', data: t.history.map(h => h.composite), borderColor: '#14b87a',
           borderDash: [5, 4], fill: false, tension: .25, pointRadius: 2 },
+        { label: '적정가 상단', data: t.history.map(h => h.composite_high), borderColor: 'rgba(20,184,122,.3)',
+          backgroundColor: 'rgba(20,184,122,.08)', borderWidth: 1, pointRadius: 0, fill: '+1', tension: .25 },
+        { label: '적정가 하단', data: t.history.map(h => h.composite_low), borderColor: 'rgba(20,184,122,.3)',
+          borderWidth: 1, pointRadius: 0, fill: false, tension: .25 },
       ]
     },
     options: {

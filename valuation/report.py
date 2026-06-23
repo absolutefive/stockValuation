@@ -55,6 +55,8 @@ def build_report_data(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
                 "date": date,
                 "price": rec.get("price"),
                 "composite": val.get("composite"),
+                "composite_low": val.get("composite_low"),
+                "composite_high": val.get("composite_high"),
                 "discrepancy_pct": val.get("discrepancy_pct"),
             }
             entry["history"].append(point)
@@ -70,10 +72,17 @@ def build_report_data(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
                 "date": date,
                 "price": rec.get("price"),
                 "composite": val.get("composite"),
+                "composite_low": val.get("composite_low"),
+                "composite_high": val.get("composite_high"),
                 "dcf": val.get("dcf"),
                 "srim": val.get("srim"),
                 "peg": val.get("peg"),
                 "discrepancy_pct": val.get("discrepancy_pct"),
+                "dispersion": val.get("dispersion"),
+                "fcf_conversion": val.get("fcf_conversion"),
+                "roic": val.get("roic"),
+                "roic_spread": val.get("roic_spread"),
+                "confidence": val.get("confidence") or "판단불가",
                 "signal": val.get("signal") or ("수집 실패" if rec.get("error") else "판단불가"),
             }
 
