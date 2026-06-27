@@ -12,6 +12,7 @@ from valuation.models import (
     dcf_value,
     evaluate,
     fcf_conversion_ratio,
+    is_out_of_domain,
     peg_value,
     roic_value,
     sensitivity_table,
@@ -198,6 +199,48 @@ def test_evaluate_handles_missing_models():
     assert result.dcf is None and result.srim is None
     assert result.composite == pytest.approx(peg_value(sparse, FLAT))
     assert len(result.notes) == 2
+
+
+def test_is_out_of_domain_predicate():
+    """극단 괴리 + 모델 발산이 함께 성립할 때만 적용한계로 판정한다."""
+    # 극단 괴리지만 모델이 수렴(저 CV) → 적용한계 아님
+    assert is_out_of_domain(2000.0, 0.10) is False
+    # 모델은 발산하나 괴리는 정상 범위 → 적용한계 아님
+    assert is_out_of_domain(50.0, 0.60) is False
+    # 둘 다 성립 → 적용한계
+    assert is_out_of_domain(2000.0, 0.52) is True
+    assert is_out_of_domain(-500.0, 0.40) is True
+    # 데이터 부족 시 보수적으로 False
+    assert is_out_of_domain(None, 0.52) is False
+    assert is_out_of_domain(2000.0, None) is False
+
+
+def test_evaluate_flags_out_of_domain_for_narrative_premium():
+    """TSLA형(펀더멘털 대비 극단 고평가 + 모델 발산) 종목은 '측정한계'로 분리한다."""
+    tsla = CompanyInputs(
+        ticker="TSLA", price=379.71, shares_outstanding=3526250000.0,
+        fcf=5251999744.0, cash=44743000064.0, total_debt=15889999872.0,
+        book_value=82137000000.0, net_income=3862000128.0, ebit=5616000000.0,
+        tax_rate=0.27, roe=0.04901, eps=1.09, eps_growth=0.083, beta=1.798,
+    )
+    result = evaluate(tsla)
+    assert result.out_of_domain is True
+    assert result.signal == "측정한계"
+    # 적정가 계산식은 불변 — 점추정 자체는 그대로 보존(거짓 정밀도만 격리)
+    assert result.composite is not None and result.composite > 0
+    assert result.discrepancy_pct is not None
+    assert any("측정한계" in n for n in result.notes)
+
+
+def test_evaluate_normal_overheat_not_flagged():
+    """일반적인 과열(수십 % 괴리)은 측정한계로 격리하지 않는다."""
+    result = evaluate(SAMPLE, FLAT)
+    overheated = CompanyInputs(
+        **{**SAMPLE.__dict__, "price": result.composite_high * 1.5}
+    )
+    out = evaluate(overheated, FLAT)
+    assert out.out_of_domain is False
+    assert out.signal == "과열 경고"
 
 
 def test_classify_signal_bands():

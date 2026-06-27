@@ -113,8 +113,14 @@ const DATA = JSON.parse(document.getElementById('report-data').textContent);
 const SIGNAL_COLORS = {
   "강한 저평가": "var(--green-strong)", "저평가": "var(--green)",
   "적정": "var(--gray)", "프리미엄": "var(--amber)", "과열 경고": "var(--red)",
-  "판단불가": "#aab2c0"
+  "측정한계": "#7c4dff", "판단불가": "#aab2c0"
 };
+// 측정한계(모델 유효범위 밖): 수백 %대 괴리율은 정밀도가 무의미하므로
+// 정확한 숫자 대신 '범위 초과'로 표기해 거짓 정밀도를 감춘다.
+function fmtDisc(L) {
+  if (L && L.out_of_domain) return "범위 초과";
+  return fmtPct(L ? L.discrepancy_pct : null);
+}
 const CURRENCY_SYMBOL = { "USD": "$", "KRW": "₩" };
 
 let state = { market: "ALL", q: "", sortKey: "discrepancy_pct", sortDir: 1, selected: null };
@@ -163,7 +169,7 @@ function renderMeta() {
     `최종 갱신 ${d.toLocaleString('ko-KR')} · 스냅샷 ${DATA.dates.length}일 · 스키마 v${DATA.schema_version}`;
 }
 function renderCards() {
-  const order = ["강한 저평가", "저평가", "적정", "프리미엄", "과열 경고"];
+  const order = ["강한 저평가", "저평가", "적정", "프리미엄", "과열 경고", "측정한계"];
   const counts = DATA.signal_counts || {};
   const total = DATA.tickers.length;
   let html = `<div class="stat"><div class="n">${total}</div><div class="l">모니터링 종목</div></div>`;
@@ -221,7 +227,7 @@ function renderTable() {
       <td class="l hide-sm"><span class="mkt">${t.market}</span></td>
       <td class="num">${fmtMoney(L.price, t.currency)}</td>
       <td class="num">${fmtMoney(L.composite, t.currency)}</td>
-      <td class="num ${cls}">${fmtPct(L.discrepancy_pct)}</td>
+      <td class="num ${L.out_of_domain ? '' : cls}">${fmtDisc(L)}</td>
       <td><span class="badge" style="background:${SIGNAL_COLORS[sig] || '#aab2c0'}">${sig}</span></td>
       <td class="l hide-sm">${L.confidence || "-"}</td>
       <td>${sparkline(t.history)}</td>
@@ -260,7 +266,7 @@ function selectTicker(tk) {
         <dt>현재가</dt><dd>${fmtMoney(L.price, t.currency)}</dd>
         <dt>복합 적정가</dt><dd>${fmtMoney(L.composite, t.currency)}</dd>
         <dt>적정가 밴드</dt><dd>${fmtMoney(L.composite_low, t.currency)} ~ ${fmtMoney(L.composite_high, t.currency)}</dd>
-        <dt>괴리율</dt><dd class="${L.discrepancy_pct>=0?'pos':'neg'}">${fmtPct(L.discrepancy_pct)}</dd>
+        <dt>괴리율</dt><dd class="${L.out_of_domain ? '' : (L.discrepancy_pct>=0?'pos':'neg')}">${fmtDisc(L)}</dd>
         <dt>DCF</dt><dd>${fmtMoney(L.dcf, t.currency)}</dd>
         <dt>S-RIM</dt><dd>${fmtMoney(L.srim, t.currency)}</dd>
         <dt>PEG</dt><dd>${fmtMoney(L.peg, t.currency)}</dd>

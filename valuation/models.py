@@ -78,6 +78,7 @@ class ValuationResult:
     confidence: str = "판단불가"                # CV·가용 모델 수 기반 신뢰도 등급
     discrepancy_pct: Optional[float] = None   # (시장가 - 적정가) / 적정가 * 100
     signal: str = "판단불가"
+    out_of_domain: bool = False               # 극단 괴리+모델 발산 → 펀더멘털 모델 적용한계
     notes: list[str] = field(default_factory=list)
 
 
@@ -541,6 +542,32 @@ def classify_signal(discrepancy_pct: Optional[float]) -> str:
     return "과열 경고"
 
 
+# 적용한계 판정 임계치. 펀더멘털 점추정이 정밀도를 잃는 구간을 정의한다.
+EXTREME_DISCREPANCY_PCT = 300.0   # 밴드 대비 괴리율 절댓값이 이 값을 넘으면 "극단"
+DIVERGENCE_DISPERSION = 0.35      # 모델 변동계수(CV) — classify_confidence의 '발산' 경계
+OUT_OF_DOMAIN_SIGNAL = "측정한계"
+
+
+def is_out_of_domain(
+    effective_discrepancy: Optional[float],
+    dispersion: Optional[float],
+) -> bool:
+    """펀더멘털 모델의 적용한계(domain of validity) 밖인지 판정한다.
+
+    괴리율이 수백 %를 넘어가면 정확한 숫자(예: 3020% vs 2066%)는 정보가치를
+    잃고 '펀더멘털로 전혀 설명되지 않는다'는 한 가지 사실만 남는다. 동시에
+    세 모델이 크게 발산(CV ≥ 0.35)하면 점추정 적정가 자체가 불안정하다.
+    두 조건이 함께 성립할 때만, 거짓 정밀도를 표시하는 대신 '측정한계'로 분리한다.
+    (예: 내러티브 프리미엄이 큰 TSLA — 모델은 틀리지 않았으나 유효범위 밖)
+    """
+    if effective_discrepancy is None or dispersion is None:
+        return False
+    return (
+        abs(effective_discrepancy) >= EXTREME_DISCREPANCY_PCT
+        and dispersion >= DIVERGENCE_DISPERSION
+    )
+
+
 def evaluate(
     inputs: CompanyInputs,
     assumptions: Optional[Assumptions] = None,
@@ -621,6 +648,20 @@ def evaluate(
     # 신호는 점추정이 아닌 밴드 기준 유효 괴리율로 판정
     eff = band_discrepancy(inputs.price, result.composite_low, result.composite_high)
     result.signal = classify_signal(eff if eff is not None else result.discrepancy_pct)
+
+    # 적용한계 분리: 극단 괴리 + 모델 발산이 겹치면 점추정의 정밀도가 무의미해진다.
+    # 적정가 계산식은 건드리지 않고, 거짓 정밀도(예: 3020%, $12)만 '측정한계'로 격리한다.
+    basis = eff if eff is not None else result.discrepancy_pct
+    if is_out_of_domain(basis, result.dispersion):
+        result.out_of_domain = True
+        direction = "극단 고평가" if (basis or 0) > 0 else "극단 저평가"
+        result.notes.append(
+            f"측정한계: 펀더멘털 대비 {direction}(밴드 괴리 {basis:+.0f}%)이며 "
+            f"모델 발산(CV {result.dispersion:.2f})도 커 점추정 적정가의 정밀도가 "
+            "무의미합니다. 내러티브 프리미엄이 큰 종목으로, 괴리율 숫자 자체보다 "
+            "방향·추세로만 해석하세요 (모델 유효범위 밖)."
+        )
+        result.signal = OUT_OF_DOMAIN_SIGNAL
     return result
 
 
