@@ -18,12 +18,28 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from valuation.models import OUT_OF_DOMAIN_SIGNAL, band_discrepancy, is_out_of_domain
 from valuation.storage import DEFAULT_SNAPSHOT_DIR, load_snapshots
 
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "report.html"
 DEFAULT_OUTPUT = Path("docs/index.html")
 
-SIGNAL_ORDER = ["강한 저평가", "저평가", "적정", "프리미엄", "과열 경고"]
+SIGNAL_ORDER = ["강한 저평가", "저평가", "적정", "프리미엄", "과열 경고", "측정한계"]
+
+
+def _resolve_out_of_domain(rec: dict[str, Any], val: dict[str, Any]) -> bool:
+    """적용한계 여부. 스냅샷에 플래그가 있으면 그대로 쓰고,
+
+    구 스냅샷(필드 부재)은 저장된 가격·밴드·발산도로 즉석 재현해 보고서가
+    과거 데이터에서도 일관되게 '측정한계'를 표기하도록 한다.
+    """
+    if "out_of_domain" in val:
+        return bool(val["out_of_domain"])
+    eff = band_discrepancy(
+        rec.get("price"), val.get("composite_low"), val.get("composite_high")
+    )
+    basis = eff if eff is not None else val.get("discrepancy_pct")
+    return is_out_of_domain(basis, val.get("dispersion"))
 
 
 def build_report_data(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
@@ -68,6 +84,10 @@ def build_report_data(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
                 entry["name"] = rec["name"]
             entry["notes"] = rec.get("notes", [])
             entry["error"] = rec.get("error")
+            out_of_domain = _resolve_out_of_domain(rec, val)
+            signal = val.get("signal") or ("수집 실패" if rec.get("error") else "판단불가")
+            if out_of_domain:
+                signal = OUT_OF_DOMAIN_SIGNAL  # 구 스냅샷 신호를 측정한계로 승격
             entry["latest"] = {
                 "date": date,
                 "price": rec.get("price"),
@@ -83,7 +103,8 @@ def build_report_data(snapshots: list[dict[str, Any]]) -> dict[str, Any]:
                 "roic": val.get("roic"),
                 "roic_spread": val.get("roic_spread"),
                 "confidence": val.get("confidence") or "판단불가",
-                "signal": val.get("signal") or ("수집 실패" if rec.get("error") else "판단불가"),
+                "signal": signal,
+                "out_of_domain": out_of_domain,
             }
 
     ticker_list = [tickers[tk] for tk in order]

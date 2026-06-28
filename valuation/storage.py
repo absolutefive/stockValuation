@@ -81,6 +81,7 @@ def build_record(
             "confidence": result.confidence,
             "discrepancy_pct": result.discrepancy_pct,
             "signal": result.signal,
+            "out_of_domain": result.out_of_domain,
         }
     return record
 
