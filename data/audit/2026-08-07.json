@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-08-07",
-  "generated_at": "2026-08-07T01:27:31.740174+00:00",
+  "generated_at": "2026-08-07T22:22:39.713284+00:00",
   "provider": "yahoo",
   "purpose": "DCF/S-RIM/PEG 계산 과정 및 입력 데이터 출처 검증 기록",
   "assumptions": {
@@ -23,7 +23,7 @@
       "market": "US",
       "name": "Apple",
       "currency": "USD",
-      "price": 312.41,
+      "price": 313.33,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -205,11 +205,11 @@
           }
         },
         "peg": {
-          "value": 249.97700000000003,
+          "value": 250.264,
           "applicable": true,
           "reason": null,
           "inputs_used": {
-            "eps": 8.71,
+            "eps": 8.72,
             "eps_growth": 0.287
           },
           "assumptions_used": {
@@ -232,8 +232,8 @@
             {
               "label": "1주당 적정주가 = EPS × 적정 PER",
               "formula": "PEG = EPS × fair_PER",
-              "substitution": "8.7100 × 28.7000",
-              "result": 249.97700000000003
+              "substitution": "8.7200 × 28.7000",
+              "result": 250.264
             }
           ],
           "input_sources": {
@@ -249,7 +249,7 @@
       "market": "US",
       "name": "Tesla",
       "currency": "USD",
-      "price": 319.53,
+      "price": 328.58,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -267,12 +267,12 @@
       },
       "metrics": {
         "dcf": {
-          "value": 19.128057795950095,
+          "value": 19.137550628603172,
           "applicable": true,
           "reason": null,
           "inputs_used": {
             "fcf": 4835999744.0,
-            "shares_outstanding": 3528000000.0,
+            "shares_outstanding": 3526250000.0,
             "cash": 43524001792.0,
             "total_debt": 16080000000.0,
             "beta": 1.827,
@@ -366,8 +366,8 @@
             {
               "label": "1주당 내재가치 = 주주가치 / 주식수",
               "formula": "DCF = Equity / shares_outstanding",
-              "substitution": "67,483,787,904.11 / 3,528,000,000.00",
-              "result": 19.128057795950095
+              "substitution": "67,483,787,904.11 / 3,526,250,000.00",
+              "result": 19.137550628603172
             }
           ],
           "input_sources": {
@@ -381,13 +381,13 @@
           }
         },
         "srim": {
-          "value": 8.087426788233342,
+          "value": 8.09144039954264,
           "applicable": true,
           "reason": null,
           "inputs_used": {
             "book_value": 82137000000.0,
             "roe": 0.046669997,
-            "shares_outstanding": 3528000000.0,
+            "shares_outstanding": 3526250000.0,
             "beta": 1.827
           },
           "assumptions_used": {
@@ -419,8 +419,8 @@
             {
               "label": "1주당 내재가치 = 자기자본가치 / 주식수",
               "formula": "S-RIM = Value / shares_outstanding",
-              "substitution": "28,532,441,708.89 / 3,528,000,000.00",
-              "result": 8.087426788233342
+              "substitution": "28,532,441,708.89 / 3,526,250,000.00",
+              "result": 8.09144039954264
             }
           ],
           "input_sources": {
@@ -456,7 +456,7 @@
       "market": "US",
       "name": "Palantir",
       "currency": "USD",
-      "price": 155.92,
+      "price": 172.01,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -682,7 +682,7 @@
       "market": "US",
       "name": "Sattlelogic",
       "currency": "USD",
-      "price": 5.04,
+      "price": 5.52,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -778,7 +778,7 @@
           "value": null,
           "applicable": false,
           "inputs_used": {
-            "eps": -0.68,
+            "eps": -0.74,
             "eps_growth": null
           },
           "assumptions_used": {
@@ -800,7 +800,7 @@
       "market": "US",
       "name": "Coinbase",
       "currency": "USD",
-      "price": 145.41,
+      "price": 153.6,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1000,7 +1000,7 @@
       "market": "US",
       "name": "Joby Aviaton",
       "currency": "USD",
-      "price": 8.23,
+      "price": 8.64,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1019,10 +1019,10 @@
           "value": null,
           "applicable": false,
           "inputs_used": {
-            "fcf": -380630368.0,
+            "fcf": -433146240.0,
             "shares_outstanding": 826240955.0,
-            "cash": 2466189056.0,
-            "total_debt": 747726016.0,
+            "cash": 2263825920.0,
+            "total_debt": 735432000.0,
             "beta": 2.698,
             "fcf_growth": null,
             "eps_growth": null
@@ -1053,7 +1053,7 @@
           "applicable": true,
           "inputs_used": {
             "book_value": 1409713000.0,
-            "roe": -0.67968005,
+            "roe": -0.65902,
             "shares_outstanding": 826240955.0,
             "beta": 2.698
           },
@@ -1074,14 +1074,14 @@
             {
               "label": "초과이익 = 자본총계 × (ROE − r)",
               "formula": "ExcessReturn = BV × (ROE − r)",
-              "substitution": "1,409,713,000.00 × (-0.6797 − 0.1779)",
-              "result": -1208941745.0256498
+              "substitution": "1,409,713,000.00 × (-0.6590 − 0.1779)",
+              "result": -1179817003.96
             },
             {
               "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
               "formula": "Value = BV + ExcessReturn / r",
-              "substitution": "1,409,713,000.00 + -1,208,941,745.03 / 0.1779",
-              "result": -5385912323.35947
+              "substitution": "1,409,713,000.00 + -1,179,817,003.96 / 0.1779",
+              "result": -5222198208.319281
             }
           ],
           "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
@@ -1096,7 +1096,7 @@
           "value": null,
           "applicable": false,
           "inputs_used": {
-            "eps": -1.14,
+            "eps": -0.98,
             "eps_growth": null
           },
           "assumptions_used": {
@@ -1118,7 +1118,7 @@
       "market": "US",
       "name": "Bakkt",
       "currency": "USD",
-      "price": 7.12,
+      "price": 7.53,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1236,7 +1236,7 @@
       "market": "US",
       "name": "abcellera",
       "currency": "USD",
-      "price": 6.53,
+      "price": 6.93,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1332,7 +1332,7 @@
           "value": null,
           "applicable": false,
           "inputs_used": {
-            "eps": -0.53,
+            "eps": -0.54,
             "eps_growth": null
           },
           "assumptions_used": {
@@ -1354,7 +1354,7 @@
       "market": "US",
       "name": "Microstrategy",
       "currency": "USD",
-      "price": 96.85,
+      "price": 100.01,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1472,7 +1472,7 @@
       "market": "US",
       "name": "Tilley",
       "currency": "USD",
-      "price": 4.44,
+      "price": 4.57,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1568,7 +1568,7 @@
           "value": null,
           "applicable": false,
           "inputs_used": {
-            "eps": -1.09,
+            "eps": -1.1,
             "eps_growth": null
           },
           "assumptions_used": {
@@ -1590,7 +1590,7 @@
       "market": "US",
       "name": "Smr",
       "currency": "USD",
-      "price": 9.47,
+      "price": 9.82,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1708,7 +1708,7 @@
       "market": "US",
       "name": "SpaceX",
       "currency": "USD",
-      "price": 114.92,
+      "price": 133.11,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1826,7 +1826,7 @@
       "market": "US",
       "name": "PoetTechnology",
       "currency": "USD",
-      "price": 8.53,
+      "price": 8.91,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -1944,11 +1944,11 @@
       "market": "US",
       "name": "Circle",
       "currency": "USD",
-      "price": 63.28,
+      "price": 66.67,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
-        "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
         "cash": "yfinance Ticker.info['totalCash']",
         "total_debt": "yfinance Ticker.info['totalDebt']",
         "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
@@ -1961,14 +1961,14 @@
       },
       "metrics": {
         "dcf": {
-          "value": 45.108011408026265,
+          "value": 25.31855998477227,
           "applicable": true,
           "reason": null,
           "inputs_used": {
-            "fcf": 485929000.0,
+            "fcf": 206229376.0,
             "shares_outstanding": 158699000.0,
             "cash": 1730125952.0,
-            "total_debt": 0.0,
+            "total_debt": 15951000.0,
             "beta": 1.0,
             "fcf_growth": null,
             "eps_growth": -0.6115831663326654
@@ -1998,74 +1998,74 @@
             {
               "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
               "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
-              "substitution": "FCF₀=485,929,000.00, g=-0.1000→g∞=0.0250, r=0.0930 → 연도별 현가 합산",
-              "result": 1570156946.7316384,
+              "substitution": "FCF₀=206,229,376.00, g=-0.1000→g∞=0.0250, r=0.0930 → 연도별 현가 합산",
+              "result": 666378189.7078196,
               "projection": [
                 {
                   "year": 1,
                   "growth_rate": -0.1,
-                  "projected_fcf": 437336100.0,
+                  "projected_fcf": 185606438.4,
                   "discount_factor": 1.093,
-                  "present_value": 400124519.6706313
+                  "present_value": 169813758.82891127
                 },
                 {
                   "year": 2,
                   "growth_rate": -0.06875,
-                  "projected_fcf": 407269243.125,
+                  "projected_fcf": 172845995.76000002,
                   "discount_factor": 1.1946489999999998,
-                  "present_value": 340911215.8675896
+                  "present_value": 144683497.6298478
                 },
                 {
                   "year": 3,
                   "growth_rate": -0.037500000000000006,
-                  "projected_fcf": 391996646.5078125,
+                  "projected_fcf": 166364270.91900003,
                   "discount_factor": 1.305751357,
-                  "present_value": 300207726.6903522
+                  "present_value": 127408843.97870861
                 },
                 {
                   "year": 4,
                   "growth_rate": -0.0062500000000000056,
-                  "projected_fcf": 389546667.4671387,
+                  "projected_fcf": 165324494.2257563,
                   "discount_factor": 1.427186233201,
-                  "present_value": 272947326.9885979
+                  "present_value": 115839468.1645395
                 },
                 {
                   "year": 5,
                   "growth_rate": 0.024999999999999994,
-                  "projected_fcf": 399285334.1538171,
+                  "projected_fcf": 169457606.5814002,
                   "discount_factor": 1.5599145528886929,
-                  "present_value": 255966157.5144674
+                  "present_value": 108632621.10581243
                 }
               ]
             },
             {
               "label": "영구가치(Terminal Value) 현재가치",
               "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
-              "substitution": "399,285,334.15×(1+0.0250)/(0.0930-0.0250) ÷ (1+0.0930)^5",
-              "result": 3858313403.7107215,
-              "terminal_value": 6018639228.053861
+              "substitution": "169,457,606.58×(1+0.0250)/(0.0930-0.0250) ÷ (1+0.0930)^5",
+              "result": 1637477009.3155549,
+              "terminal_value": 2554324216.851988
             },
             {
               "label": "기업가치 = ΣPV + PV(TV)",
               "formula": "EV = ΣPV(FCF) + PV(TV)",
-              "substitution": "1,570,156,946.73 + 3,858,313,403.71",
-              "result": 5428470350.44236
+              "substitution": "666,378,189.71 + 1,637,477,009.32",
+              "result": 2303855199.0233746
             },
             {
               "label": "주주가치 = 기업가치 + 현금 - 총부채",
               "formula": "Equity = EV + cash - total_debt",
-              "substitution": "5,428,470,350.44 + 1,730,125,952.00 - 0.0000",
-              "result": 7158596302.44236
+              "substitution": "2,303,855,199.02 + 1,730,125,952.00 - 15,951,000.00",
+              "result": 4018030151.0233746
             },
             {
               "label": "1주당 내재가치 = 주주가치 / 주식수",
               "formula": "DCF = Equity / shares_outstanding",
-              "substitution": "7,158,596,302.44 / 158,699,000.00",
-              "result": 45.108011408026265
+              "substitution": "4,018,030,151.02 / 158,699,000.00",
+              "result": 25.31855998477227
             }
           ],
           "input_sources": {
-            "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
             "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
             "cash": "yfinance Ticker.info['totalCash']",
             "total_debt": "yfinance Ticker.info['totalDebt']",
@@ -2150,7 +2150,7 @@
       "market": "KR",
       "name": "삼성전자",
       "currency": "KRW",
-      "price": 236500.0,
+      "price": 231000.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -2356,7 +2356,7 @@
       "market": "KR",
       "name": "메디포스트",
       "currency": "KRW",
-      "price": 9840.0,
+      "price": 9850.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -2473,7 +2473,7 @@
       "market": "KR",
       "name": "NAVER",
       "currency": "KRW",
-      "price": 219000.0,
+      "price": 210000.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -2679,7 +2679,7 @@
       "market": "KR",
       "name": "오이솔루션",
       "currency": "KRW",
-      "price": 26650.0,
+      "price": 26550.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -2796,7 +2796,7 @@
       "market": "KR",
       "name": "삼성에스디에스",
       "currency": "KRW",
-      "price": 229500.0,
+      "price": 221500.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -3002,7 +3002,7 @@
       "market": "KR",
       "name": "솔트룩스",
       "currency": "KRW",
-      "price": 17030.0,
+      "price": 16960.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -3200,7 +3200,7 @@
       "market": "KR",
       "name": "HMM",
       "currency": "KRW",
-      "price": 21550.0,
+      "price": 21800.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -3325,7 +3325,7 @@
       "market": "KR",
       "name": "삼성중공업",
       "currency": "KRW",
-      "price": 22300.0,
+      "price": 22050.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
@@ -3531,7 +3531,7 @@
       "market": "KR",
       "name": "토마토시스템",
       "currency": "KRW",
-      "price": 2405.0,
+      "price": 2335.0,
       "data_sources": {
         "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
         "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
