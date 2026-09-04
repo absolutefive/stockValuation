@@ -1,0 +1,3647 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-04",
+  "generated_at": "2026-09-04T23:28:51.528877+00:00",
+  "provider": "yahoo",
+  "purpose": "DCF/S-RIM/PEG 계산 과정 및 입력 데이터 출처 검증 기록",
+  "assumptions": {
+    "risk_free_rate": 0.043,
+    "equity_risk_premium": 0.05,
+    "projection_years": 5,
+    "terminal_growth": 0.025,
+    "fcf_growth_cap": 0.25,
+    "fair_peg": 1.0,
+    "peg_growth_cap": 0.5,
+    "srim_persistence": 1.0,
+    "dcf_fade": true,
+    "growth_gate": true,
+    "discount_rate_override": null
+  },
+  "records": [
+    {
+      "ticker": "AAPL",
+      "market": "US",
+      "name": "Apple",
+      "currency": "USD",
+      "price": 319.97,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 162.8840845544806,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 107721875456.0,
+            "shares_outstanding": 15004697000.0,
+            "cash": 62399000576.0,
+            "total_debt": 84343996416.0,
+            "beta": 1.085,
+            "fcf_growth": null,
+            "eps_growth": 0.287
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0850 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.09725
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(0.2870, 0.2500), -0.10)",
+              "result": 0.25
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=107,721,875,456.00, g=0.2500→g∞=0.0250, r=0.0973 → 연도별 현가 합산",
+              "result": 658436140677.7815,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.25,
+                  "projected_fcf": 134652344320.0,
+                  "discount_factor": 1.09725,
+                  "present_value": 122718017151.97083
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.19375,
+                  "projected_fcf": 160741236032.0,
+                  "discount_factor": 1.2039575625,
+                  "present_value": 133510715857.97691
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.1375,
+                  "projected_fcf": 182843155986.4,
+                  "discount_factor": 1.3210424354531252,
+                  "present_value": 138408238130.27908
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.08124999999999999,
+                  "projected_fcf": 197699162410.295,
+                  "discount_factor": 1.4495138123009417,
+                  "present_value": 136389981752.89522
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.024999999999999994,
+                  "projected_fcf": 202641641470.55237,
+                  "discount_factor": 1.5904790305472083,
+                  "present_value": 127409187784.65944
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "202,641,641,470.55×(1+0.0250)/(0.0973-0.0250) ÷ (1+0.0973)^5",
+              "result": 1807535190024.5798,
+              "terminal_value": 2874846816710.258
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "658,436,140,677.78 + 1,807,535,190,024.58",
+              "result": 2465971330702.3613
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "2,465,971,330,702.36 + 62,399,000,576.00 - 84,343,996,416.00",
+              "result": 2444026334862.3613
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "2,444,026,334,862.36 / 15,004,697,000.00",
+              "result": 162.8840845544806
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 75.16315265408768,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 73733000000.0,
+            "roe": 1.4875101,
+            "shares_outstanding": 15004697000.0,
+            "beta": 1.085
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0850 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.09725
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "73,733,000,000.00 × (1.4875 − 0.0973)",
+              "result": 102508047953.29999
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "73,733,000,000.00 + 102,508,047,953.30 / 0.0973",
+              "result": 1127800331139.3315
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "1,127,800,331,139.33 / 15,004,697,000.00",
+              "result": 75.16315265408768
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": 250.55100000000002,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "eps": 8.73,
+            "eps_growth": 0.287
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [
+            {
+              "label": "적용 성장률 (상한 적용 후, %)",
+              "formula": "g% = min(eps_growth, peg_growth_cap) × 100",
+              "substitution": "min(0.2870, 0.5000) × 100",
+              "result": 28.7
+            },
+            {
+              "label": "적정 PER = 성장률(%) × 적정 PEG",
+              "formula": "fair_PER = g% × fair_peg",
+              "substitution": "28.7000 × 1.0000",
+              "result": 28.7
+            },
+            {
+              "label": "1주당 적정주가 = EPS × 적정 PER",
+              "formula": "PEG = EPS × fair_PER",
+              "substitution": "8.7300 × 28.7000",
+              "result": 250.55100000000002
+            }
+          ],
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "TSLA",
+      "market": "US",
+      "name": "Tesla",
+      "currency": "USD",
+      "price": 354.08,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 19.045873547158703,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 4835999744.0,
+            "shares_outstanding": 3526250000.0,
+            "cash": 43524001792.0,
+            "total_debt": 16080000000.0,
+            "beta": 1.845,
+            "fcf_growth": null,
+            "eps_growth": -0.03
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.8450 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.13524999999999998
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(-0.0300, 0.2500), -0.10)",
+              "result": -0.03
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=4,835,999,744.00, g=-0.0300→g∞=0.0250, r=0.1352 → 연도별 현가 합산",
+              "result": 16191719136.695751,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": -0.03,
+                  "projected_fcf": 4690919751.68,
+                  "discount_factor": 1.13525,
+                  "present_value": 4132058799.1015196
+                },
+                {
+                  "year": 2,
+                  "growth_rate": -0.01625,
+                  "projected_fcf": 4614692305.7152,
+                  "discount_factor": 1.2887925625000003,
+                  "present_value": 3580632322.0578017
+                },
+                {
+                  "year": 3,
+                  "growth_rate": -0.0024999999999999988,
+                  "projected_fcf": 4603155574.950912,
+                  "discount_factor": 1.4631017565781255,
+                  "present_value": 3146162291.347859
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.011250000000000003,
+                  "projected_fcf": 4654941075.16911,
+                  "discount_factor": 1.660986269155317,
+                  "present_value": 2802516289.0337124
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 4771314602.048338,
+                  "discount_factor": 1.8856346620585738,
+                  "present_value": 2530349435.15486
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "4,771,314,602.05×(1+0.0250)/(0.1352-0.0250) ÷ (1+0.1352)^5",
+              "result": 23524790666.972626,
+              "terminal_value": 44359160699.31562
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "16,191,719,136.70 + 23,524,790,666.97",
+              "result": 39716509803.66838
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "39,716,509,803.67 + 43,524,001,792.00 - 16,080,000,000.00",
+              "result": 67160511595.66838
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "67,160,511,595.67 / 3,526,250,000.00",
+              "result": 19.045873547158703
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 8.037597173224057,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 82137000000.0,
+            "roe": 0.046669997,
+            "shares_outstanding": 3526250000.0,
+            "beta": 1.845
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.8450 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.13524999999999998
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "82,137,000,000.00 × (0.0467 − 0.1352)",
+              "result": -7275695706.410999
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "82,137,000,000.00 + -7,275,695,706.41 / 0.1352",
+              "result": 28342577032.08133
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "28,342,577,032.08 / 3,526,250,000.00",
+              "result": 8.037597173224057
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": 1.09,
+            "eps_growth": -0.03
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "예상 EPS 성장률이 없거나 0 이하 → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "PLTR",
+      "market": "US",
+      "name": "Palantir",
+      "currency": "USD",
+      "price": 174.33,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 17.50257048712594,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 2159104512.0,
+            "shares_outstanding": 2565197000.0,
+            "cash": 9409098752.0,
+            "total_debt": 211400000.0,
+            "beta": 1.621,
+            "fcf_growth": null,
+            "eps_growth": 2.154
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.6210 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.12405000000000001
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(2.1540, 0.2500), -0.10)",
+              "result": 0.25
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=2,159,104,512.00, g=0.2500→g∞=0.0250, r=0.1241 → 연도별 현가 합산",
+              "result": 12276995124.716831,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.25,
+                  "projected_fcf": 2698880640.0,
+                  "discount_factor": 1.12405,
+                  "present_value": 2401032551.932743
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.19375,
+                  "projected_fcf": 3221788764.0000005,
+                  "discount_factor": 1.2634884025,
+                  "present_value": 2549915581.041513
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.1375,
+                  "projected_fcf": 3664784719.05,
+                  "discount_factor": 1.4202241388301249,
+                  "present_value": 2580427003.6339316
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.08124999999999999,
+                  "projected_fcf": 3962548477.4728127,
+                  "discount_factor": 1.596402943252002,
+                  "present_value": 2482173121.9066668
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.024999999999999994,
+                  "projected_fcf": 4061612189.4096327,
+                  "discount_factor": 1.7944367283624127,
+                  "present_value": 2263446866.2019777
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "4,061,612,189.41×(1+0.0250)/(0.1241-0.0250) ÷ (1+0.1241)^5",
+              "result": 23422847429.147167,
+              "terminal_value": 42030817709.690796
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "12,276,995,124.72 + 23,422,847,429.15",
+              "result": 35699842553.864
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "35,699,842,553.86 + 9,409,098,752.00 - 211,400,000.00",
+              "result": 44897541305.864
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "44,897,541,305.86 / 2,565,197,000.00",
+              "result": 17.50257048712594
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 8.844171201893198,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 7387268000.0,
+            "roe": 0.38097,
+            "shares_outstanding": 2565197000.0,
+            "beta": 1.621
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.6210 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.12405000000000001
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "7,387,268,000.00 × (0.3810 − 0.1241)",
+              "result": 1897936894.56
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "7,387,268,000.00 + 1,897,936,894.56 / 0.1241",
+              "result": 22687041434.58283
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "22,687,041,434.58 / 2,565,197,000.00",
+              "result": 8.844171201893198
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": 58.5,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "eps": 1.17,
+            "eps_growth": 2.154
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [
+            {
+              "label": "적용 성장률 (상한 적용 후, %)",
+              "formula": "g% = min(eps_growth, peg_growth_cap) × 100",
+              "substitution": "min(2.1540, 0.5000) × 100",
+              "result": 50.0
+            },
+            {
+              "label": "적정 PER = 성장률(%) × 적정 PEG",
+              "formula": "fair_PER = g% × fair_peg",
+              "substitution": "50.0000 × 1.0000",
+              "result": 50.0
+            },
+            {
+              "label": "1주당 적정주가 = EPS × 적정 PER",
+              "formula": "PEG = EPS × fair_PER",
+              "substitution": "1.1700 × 50.0000",
+              "result": 58.5
+            }
+          ],
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "SATL",
+      "market": "US",
+      "name": "Sattlelogic",
+      "currency": "USD",
+      "price": 4.64,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -18836376.0,
+            "shares_outstanding": 134134266.0,
+            "cash": 112809000.0,
+            "total_debt": 96486000.0,
+            "beta": 1.358,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 60526000.0,
+            "roe": -1.7166341737435151,
+            "shares_outstanding": 134134266.0,
+            "beta": 1.358
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.3580 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1109
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "60,526,000.00 × (-1.7166 − 0.1109)",
+              "result": -110613333.39999999
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "60,526,000.00 + -110,613,333.40 / 0.1109",
+              "result": -936889089.2696122
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -0.74,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "COIN",
+      "market": "US",
+      "name": "Coinbase",
+      "currency": "USD",
+      "price": 184.64,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 58.201097268302554,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 2668452864.0,
+            "shares_outstanding": 287209000.0,
+            "cash": 8788842496.0,
+            "total_debt": 6668290048.0,
+            "beta": 3.388,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 3.3880 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.21239999999999998
+            },
+            {
+              "label": "적용 성장률 g (출처: terminal_growth (성장률 데이터 부재 시 기본값))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(0.0250, 0.2500), -0.10)",
+              "result": 0.025
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=2,668,452,864.00, g=0.0250→g∞=0.0250, r=0.2124 → 연도별 현가 합산",
+              "result": 8291510861.819181,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 2735164185.6,
+                  "discount_factor": 1.2124,
+                  "present_value": 2255991575.057737
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 2803543290.24,
+                  "discount_factor": 1.4699137599999998,
+                  "present_value": 1907284200.2921314
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 2873631872.4959993,
+                  "discount_factor": 1.7821234426239996,
+                  "present_value": 1612476332.315601
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 2945472669.308399,
+                  "discount_factor": 2.160646461837337,
+                  "present_value": 1363236754.060946
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 3019109486.041109,
+                  "discount_factor": 2.6195677703315874,
+                  "present_value": 1152522000.0927663
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "3,019,109,486.04×(1+0.0250)/(0.2124-0.0250) ÷ (1+0.2124)^5",
+              "result": 6303815635.512729,
+              "terminal_value": 16513272268.901478
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "8,291,510,861.82 + 6,303,815,635.51",
+              "result": 14595326497.33191
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "14,595,326,497.33 + 8,788,842,496.00 - 6,668,290,048.00",
+              "result": 16715878945.33191
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "16,715,878,945.33 / 287,209,000.00",
+              "result": 58.201097268302554
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 14793058000.0,
+            "roe": -0.07847,
+            "shares_outstanding": 287209000.0,
+            "beta": 3.388
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 3.3880 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.21239999999999998
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "14,793,058,000.00 × (-0.0785 − 0.2124)",
+              "result": -4302856780.459999
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "14,793,058,000.00 + -4,302,856,780.46 / 0.2124",
+              "result": -5465213094.444443
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -3.87,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "JOBY",
+      "market": "US",
+      "name": "Joby Aviaton",
+      "currency": "USD",
+      "price": 6.74,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -436446240.0,
+            "shares_outstanding": 826240955.0,
+            "cash": 2263825920.0,
+            "total_debt": 747713024.0,
+            "beta": 2.683,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 1409713000.0,
+            "roe": -0.65902,
+            "shares_outstanding": 826240955.0,
+            "beta": 2.683
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 2.6830 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.17714999999999997
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "1,409,713,000.00 × (-0.6590 − 0.1771)",
+              "result": -1178759719.21
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "1,409,713,000.00 + -1,178,759,719.21 / 0.1771",
+              "result": -5244307430.200397
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -0.98,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "BKKT",
+      "market": "US",
+      "name": "Bakkt",
+      "currency": "USD",
+      "price": 8.33,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -33939000.0,
+            "shares_outstanding": 12090013.0,
+            "cash": 51852000.0,
+            "total_debt": 63000.0,
+            "beta": 5.933,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 112782000.0,
+            "roe": -0.1017,
+            "shares_outstanding": 12090013.0,
+            "beta": 5.933
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 5.9330 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.33965
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "112,782,000.00 × (-0.1017 − 0.3397)",
+              "result": -49776335.7
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "112,782,000.00 + -49,776,335.70 / 0.3397",
+              "result": -33769849.5510084
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -3.99,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "ABCL",
+      "market": "US",
+      "name": "abcellera",
+      "currency": "USD",
+      "price": 11.43,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -46431124.0,
+            "shares_outstanding": 298707082.0,
+            "cash": 540104000.0,
+            "total_debt": 135616992.0,
+            "beta": 1.322,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 966904000.0,
+            "roe": -0.17304,
+            "shares_outstanding": 298707082.0,
+            "beta": 1.322
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.3220 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1091
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "966,904,000.00 × (-0.1730 − 0.1091)",
+              "result": -272802294.56
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "966,904,000.00 + -272,802,294.56 / 0.1091",
+              "result": -1533575326.8560953
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -0.54,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "MSTR",
+      "market": "US",
+      "name": "Microstrategy",
+      "currency": "USD",
+      "price": 142.8,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -22587523072.0,
+            "shares_outstanding": 277660000.0,
+            "cash": 2447982080.0,
+            "total_debt": 6770777088.0,
+            "beta": 3.555,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 51042972000.0,
+            "roe": -0.63562,
+            "shares_outstanding": 277660000.0,
+            "beta": 3.555
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 3.5550 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.22075
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "51,042,972,000.00 × (-0.6356 − 0.2208)",
+              "result": -43711669931.64
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "51,042,972,000.00 + -43,711,669,931.64 / 0.2208",
+              "result": -146971387826.22876
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -99.16,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "TLRY",
+      "market": "US",
+      "name": "Tilley",
+      "currency": "USD",
+      "price": 4.5,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -25034250.0,
+            "shares_outstanding": 111832375.0,
+            "cash": 425655008.0,
+            "total_debt": 343899008.0,
+            "beta": 1.921,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 1614332000.0,
+            "roe": -0.06819,
+            "shares_outstanding": 111832375.0,
+            "beta": 1.921
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.9210 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.13905
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "1,614,332,000.00 × (-0.0682 − 0.1391)",
+              "result": -334554163.68
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "1,614,332,000.00 + -334,554,163.68 / 0.1391",
+              "result": -791667019.6332254
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -1.09,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "SMR",
+      "market": "US",
+      "name": "Smr",
+      "currency": "USD",
+      "price": 9.7,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -204594000.0,
+            "shares_outstanding": 163731673.0,
+            "cash": 1072147968.0,
+            "total_debt": 6692000.0,
+            "beta": 2.309,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 1168841000.0,
+            "roe": -0.5518,
+            "shares_outstanding": 163731673.0,
+            "beta": 2.309
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 2.3090 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.15845
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "1,168,841,000.00 × (-0.5518 − 0.1585)",
+              "result": -830169320.2499999
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "1,168,841,000.00 + -830,169,320.25 / 0.1585",
+              "result": -4070473106.9738073
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -2.2,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "SPCX",
+      "market": "US",
+      "name": "SpaceX",
+      "currency": "USD",
+      "price": 147.95,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "기본값 1.0 (info['beta'] 부재)"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -14121000000.0,
+            "shares_outstanding": 9649000000.0,
+            "cash": 100009000960.0,
+            "total_debt": 39708000256.0,
+            "beta": 1.0,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "기본값 1.0 (info['beta'] 부재)",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 41325000000.0,
+            "roe": -0.2150998169630974,
+            "shares_outstanding": 9649000000.0,
+            "beta": 1.0
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0000 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.093
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "41,325,000,000.00 × (-0.2151 − 0.0930)",
+              "result": -12732224936.0
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "41,325,000,000.00 + -12,732,224,936.00 / 0.0930",
+              "result": -95580644473.11829
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "기본값 1.0 (info['beta'] 부재)"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -1.09,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "POET",
+      "market": "US",
+      "name": "PoetTechnology",
+      "currency": "USD",
+      "price": 7.92,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -36494488.0,
+            "shares_outstanding": 93156184.0,
+            "cash": 796341888.0,
+            "total_debt": 7797859.0,
+            "beta": 0.841,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 183789272.0,
+            "roe": -0.16886,
+            "shares_outstanding": 93156184.0,
+            "beta": 0.841
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 0.8410 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.08505
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "183,789,272.00 × (-0.1689 − 0.0851)",
+              "result": -46665934.05352
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "183,789,272.00 + -46,665,934.05 / 0.0851",
+              "result": -364898959.08195186
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": -0.69,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "CRCL",
+      "market": "US",
+      "name": "Circle",
+      "currency": "USD",
+      "price": 102.05,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+        "eps_growth": "yfinance Ticker.info['forwardEps']/['trailingEps'] − 1 (추정)",
+        "beta": "기본값 1.0 (info['beta'] 부재)"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 25.31855998477227,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 206229376.0,
+            "shares_outstanding": 158699000.0,
+            "cash": 1730125952.0,
+            "total_debt": 15951000.0,
+            "beta": 1.0,
+            "fcf_growth": null,
+            "eps_growth": -0.6811543086172345
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0000 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.093
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(-0.6812, 0.2500), -0.10)",
+              "result": -0.1
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=206,229,376.00, g=-0.1000→g∞=0.0250, r=0.0930 → 연도별 현가 합산",
+              "result": 666378189.7078196,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": -0.1,
+                  "projected_fcf": 185606438.4,
+                  "discount_factor": 1.093,
+                  "present_value": 169813758.82891127
+                },
+                {
+                  "year": 2,
+                  "growth_rate": -0.06875,
+                  "projected_fcf": 172845995.76000002,
+                  "discount_factor": 1.1946489999999998,
+                  "present_value": 144683497.6298478
+                },
+                {
+                  "year": 3,
+                  "growth_rate": -0.037500000000000006,
+                  "projected_fcf": 166364270.91900003,
+                  "discount_factor": 1.305751357,
+                  "present_value": 127408843.97870861
+                },
+                {
+                  "year": 4,
+                  "growth_rate": -0.0062500000000000056,
+                  "projected_fcf": 165324494.2257563,
+                  "discount_factor": 1.427186233201,
+                  "present_value": 115839468.1645395
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.024999999999999994,
+                  "projected_fcf": 169457606.5814002,
+                  "discount_factor": 1.5599145528886929,
+                  "present_value": 108632621.10581243
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "169,457,606.58×(1+0.0250)/(0.0930-0.0250) ÷ (1+0.0930)^5",
+              "result": 1637477009.3155549,
+              "terminal_value": 2554324216.851988
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "666,378,189.71 + 1,637,477,009.32",
+              "result": 2303855199.0233746
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "2,303,855,199.02 + 1,730,125,952.00 - 15,951,000.00",
+              "result": 4018030151.0233746
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "4,018,030,151.02 / 158,699,000.00",
+              "result": 25.31855998477227
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "기본값 1.0 (info['beta'] 부재)",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['forwardEps']/['trailingEps'] − 1 (추정)"
+          }
+        },
+        "srim": {
+          "value": 34.61966070549326,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 3329327000.0,
+            "roe": 0.15347,
+            "shares_outstanding": 158699000.0,
+            "beta": 1.0
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0000 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.093
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "3,329,327,000.00 × (0.1535 − 0.0930)",
+              "result": 201324403.69
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "3,329,327,000.00 + 201,324,403.69 / 0.0930",
+              "result": 5494105534.301075
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "5,494,105,534.30 / 158,699,000.00",
+              "result": 34.61966070549326
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "기본값 1.0 (info['beta'] 부재)"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": 4.99,
+            "eps_growth": -0.6811543086172345
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "예상 EPS 성장률이 없거나 0 이하 → PEG 미적용",
+          "input_sources": {
+            "eps": "yfinance Ticker.info['trailingEps'] (TTM)",
+            "eps_growth": "yfinance Ticker.info['forwardEps']/['trailingEps'] − 1 (추정)"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "005930.KS",
+      "market": "KR",
+      "name": "삼성전자",
+      "currency": "KRW",
+      "price": 255500.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 203745.341237493,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 69550825537536.0,
+            "shares_outstanding": 6703158564.0,
+            "cash": 189999035187200.0,
+            "total_debt": 22408721334272.0,
+            "beta": 1.544,
+            "fcf_growth": null,
+            "eps_growth": 13.559
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.5440 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1202
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(13.5590, 0.2500), -0.10)",
+              "result": 0.25
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=69,550,825,537,536.00, g=0.2500→g∞=0.0250, r=0.1202 → 연도별 현가 합산",
+              "result": 399534423512824.0,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.25,
+                  "projected_fcf": 86938531921920.0,
+                  "discount_factor": 1.1202,
+                  "present_value": 77609830317728.97
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.19375,
+                  "projected_fcf": 103782872481792.0,
+                  "discount_factor": 1.2548480400000002,
+                  "present_value": 82705530210488.27
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.1375,
+                  "projected_fcf": 118053017448038.39,
+                  "discount_factor": 1.4056807744080002,
+                  "present_value": 83982807190171.75
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.08124999999999999,
+                  "projected_fcf": 127644825115691.52,
+                  "discount_factor": 1.574643603491842,
+                  "present_value": 81062676552734.5
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.024999999999999994,
+                  "projected_fcf": 130835945743583.8,
+                  "discount_factor": 1.7639157646315615,
+                  "present_value": 74173579241700.47
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "130,835,945,743,583.80×(1+0.0250)/(0.1202-0.0250) ÷ (1+0.1202)^5",
+              "result": 798612591625451.4,
+              "terminal_value": 1408685340201401.0
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "399,534,423,512,824.12 + 798,612,591,625,451.38",
+              "result": 1198147015138275.5
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "1,198,147,015,138,275.50 + 189,999,035,187,200.00 - 22,408,721,334,272.00",
+              "result": 1365737328991203.5
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "1,365,737,328,991,203.50 / 6,703,158,564.00",
+              "result": 203745.341237493
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 162169.3379595196,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 424313255000000.0,
+            "roe": 0.30794,
+            "shares_outstanding": 6703158564.0,
+            "beta": 1.544
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.5440 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1202
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "424,313,255,000,000.00 × (0.3079 − 0.1202)",
+              "result": 79660570493700.0
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "424,313,255,000,000.00 + 79,660,570,493,700.00 / 0.1202",
+              "result": 1087046786561564.0
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "1,087,046,786,561,564.00 / 6,703,158,564.00",
+              "result": 162169.3379595196
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": 13.559
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "078160.KQ",
+      "market": "KR",
+      "name": "메디포스트",
+      "currency": "KRW",
+      "price": 8920.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+        "cash": "yfinance balance_sheet['Cash Cash Equivalents And Short Term Investments'|'Cash And Cash Equivalents'] (최신)",
+        "total_debt": "yfinance balance_sheet['Total Debt'] (최신)",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance income_stmt['Net Income'] (최신 회계연도)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+        "beta": "기본값 1.0 (info['beta'] 부재)"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -60422748780.0,
+            "shares_outstanding": 35464291.0,
+            "cash": 78033844430.0,
+            "total_debt": 40399350000.0,
+            "beta": 1.0,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance balance_sheet['Cash Cash Equivalents And Short Term Investments'|'Cash And Cash Equivalents'] (최신)",
+            "total_debt": "yfinance balance_sheet['Total Debt'] (최신)",
+            "beta": "기본값 1.0 (info['beta'] 부재)",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 249019175330.0,
+            "roe": -0.3429374942585471,
+            "shares_outstanding": 35464291.0,
+            "beta": 1.0
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0000 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.093
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "249,019,175,330.00 × (-0.3429 − 0.0930)",
+              "result": -108556795315.69002
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "249,019,175,330.00 + -108,556,795,315.69 / 0.0930",
+              "result": -918258193655.9141
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "기본값 1.0 (info['beta'] 부재)"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "035420.KS",
+      "market": "KR",
+      "name": "NAVER",
+      "currency": "KRW",
+      "price": 213500.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 148665.64306570456,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 902243549184.0,
+            "shares_outstanding": 151329878.0,
+            "cash": 8991635668992.0,
+            "total_debt": 5634812018688.0,
+            "beta": 1.196,
+            "fcf_growth": null,
+            "eps_growth": 0.436
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.1960 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1028
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(0.4360, 0.2500), -0.10)",
+              "result": 0.25
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=902,243,549,184.00, g=0.2500→g∞=0.0250, r=0.1028 → 연도별 현가 합산",
+              "result": 5431626464172.214,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.25,
+                  "projected_fcf": 1127804436480.0,
+                  "discount_factor": 1.1028,
+                  "present_value": 1022673591294.8857
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.19375,
+                  "projected_fcf": 1346316546048.0,
+                  "discount_factor": 1.21616784,
+                  "present_value": 1107015414951.2783
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.1375,
+                  "projected_fcf": 1531435071129.5999,
+                  "discount_factor": 1.341189893952,
+                  "present_value": 1141848054504.0615
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.08124999999999999,
+                  "projected_fcf": 1655864170658.88,
+                  "discount_factor": 1.4790642150502655,
+                  "present_value": 1119535009913.4172
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.024999999999999994,
+                  "projected_fcf": 1697260774925.3518,
+                  "discount_factor": 1.6311120163574329,
+                  "present_value": 1040554393508.5715
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "1,697,260,774,925.35×(1+0.0250)/(0.1028-0.0250) ÷ (1+0.1028)^5",
+              "result": 13709103513448.402,
+              "terminal_value": 22361083474273.59
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "5,431,626,464,172.21 + 13,709,103,513,448.40",
+              "result": 19140729977620.617
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "19,140,729,977,620.62 + 8,991,635,668,992.00 - 5,634,812,018,688.00",
+              "result": 22497553627924.617
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "22,497,553,627,924.62 / 151,329,878.00",
+              "result": 148665.64306570456
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 113843.94849091074,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 27581956984240.0,
+            "roe": 0.06421,
+            "shares_outstanding": 151329878.0,
+            "beta": 1.196
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.1960 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1028
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "27,581,956,984,240.00 × (0.0642 − 0.1028)",
+              "result": -1064387720021.8215
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "27,581,956,984,240.00 + -1,064,387,720,021.82 / 0.1028",
+              "result": 17227990836167.807
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "17,227,990,836,167.81 / 151,329,878.00",
+              "result": 113843.94849091074
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": 0.436
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "138080.KQ",
+      "market": "KR",
+      "name": "오이솔루션",
+      "currency": "KRW",
+      "price": 21300.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+        "cash": "yfinance balance_sheet['Cash Cash Equivalents And Short Term Investments'|'Cash And Cash Equivalents'] (최신)",
+        "total_debt": "yfinance balance_sheet['Total Debt'] (최신)",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance income_stmt['Net Income'] (최신 회계연도)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+        "beta": "기본값 1.0 (info['beta'] 부재)"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -12878772370.0,
+            "shares_outstanding": 10234371.0,
+            "cash": 28718265910.0,
+            "total_debt": 37217360000.0,
+            "beta": 1.0,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance balance_sheet['Cash Cash Equivalents And Short Term Investments'|'Cash And Cash Equivalents'] (최신)",
+            "total_debt": "yfinance balance_sheet['Total Debt'] (최신)",
+            "beta": "기본값 1.0 (info['beta'] 부재)",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 64276618320.0,
+            "roe": -0.4206694425861949,
+            "shares_outstanding": 10234371.0,
+            "beta": 1.0
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0000 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.093
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "64,276,618,320.00 × (-0.4207 − 0.0930)",
+              "result": -33016934703.76
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "64,276,618,320.00 + -33,016,934,703.76 / 0.0930",
+              "result": -290744184946.2366
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "기본값 1.0 (info['beta'] 부재)"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "018260.KS",
+      "market": "KR",
+      "name": "삼성에스디에스",
+      "currency": "KRW",
+      "price": 238000.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 154856.39918431928,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 506540851200.0,
+            "shares_outstanding": 77353988.0,
+            "cash": 7635447316480.0,
+            "total_debt": 1932321357824.0,
+            "beta": 1.276,
+            "fcf_growth": null,
+            "eps_growth": 0.02
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.2760 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1068
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(0.0200, 0.2500), -0.10)",
+              "result": 0.02
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=506,540,851,200.00, g=0.0200→g∞=0.0250, r=0.1068 → 연도별 현가 합산",
+              "result": 2004407379130.6577,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.02,
+                  "projected_fcf": 516671668224.0,
+                  "discount_factor": 1.1068,
+                  "present_value": 466815746498.01227
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.02125,
+                  "projected_fcf": 527650941173.76,
+                  "discount_factor": 1.22500624,
+                  "present_value": 430733268080.13654
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.0225,
+                  "projected_fcf": 539523087350.1696,
+                  "discount_factor": 1.355836906432,
+                  "present_value": 397926243776.5988
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.02375,
+                  "projected_fcf": 552336760674.7361,
+                  "discount_factor": 1.5006402880389376,
+                  "present_value": 368067394349.74066
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 566145179691.6045,
+                  "discount_factor": 1.6609086708014962,
+                  "present_value": 340864726426.1693
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "566,145,179,691.60×(1+0.0250)/(0.1068-0.0250) ÷ (1+0.1068)^5",
+              "result": 4271226706440.3843,
+              "terminal_value": 7094117471685.751
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "2,004,407,379,130.66 + 4,271,226,706,440.38",
+              "result": 6275634085571.042
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "6,275,634,085,571.04 + 7,635,447,316,480.00 - 1,932,321,357,824.00",
+              "result": 11978760044227.043
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "11,978,760,044,227.04 / 77,353,988.00",
+              "result": 154856.39918431928
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 78475.14746214649,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 9916106572210.0,
+            "roe": 0.06538,
+            "shares_outstanding": 77353988.0,
+            "beta": 1.276
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.2760 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1068
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "9,916,106,572,210.00 × (0.0654 − 0.1068)",
+              "result": -410725134220.9383
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "9,916,106,572,210.00 + -410,725,134,220.94 / 0.1068",
+              "result": 6070365615085.109
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "6,070,365,615,085.11 / 77,353,988.00",
+              "result": 78475.14746214649
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": 0.02
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "304100.KQ",
+      "market": "KR",
+      "name": "솔트룩스",
+      "currency": "KRW",
+      "price": 15390.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 11313.494021667182,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 10083840000.0,
+            "shares_outstanding": 12259858.0,
+            "cash": 47620612096.0,
+            "total_debt": 10951713792.0,
+            "beta": 1.666,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.6660 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1263
+            },
+            {
+              "label": "적용 성장률 g (출처: terminal_growth (성장률 데이터 부재 시 기본값))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(0.0250, 0.2500), -0.10)",
+              "result": 0.025
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=10,083,840,000.00, g=0.0250→g∞=0.0250, r=0.1263 → 연도별 현가 합산",
+              "result": 38340288631.36899,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 10335936000.0,
+                  "discount_factor": 1.1263,
+                  "present_value": 9176894255.526945
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 10594334400.0,
+                  "discount_factor": 1.2685516900000002,
+                  "present_value": 8351519676.742537
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 10859192760.0,
+                  "discount_factor": 1.4287697684470002,
+                  "present_value": 7600379711.143656
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 11130672578.999998,
+                  "discount_factor": 1.6092233902018565,
+                  "present_value": 6916797659.524323
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 11408939393.474997,
+                  "discount_factor": 1.8124683043843512,
+                  "present_value": 6294697328.431527
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "11,408,939,393.47×(1+0.0250)/(0.1263-0.0250) ÷ (1+0.1263)^5",
+              "result": 63692643254.11959,
+              "terminal_value": 115440897120.55153
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "38,340,288,631.37 + 63,692,643,254.12",
+              "result": 102032931885.48859
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "102,032,931,885.49 + 47,620,612,096.00 - 10,951,713,792.00",
+              "result": 138701830189.4886
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "138,701,830,189.49 / 12,259,858.00",
+              "result": 11313.494021667182
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 70522867330.0,
+            "roe": -0.16306,
+            "shares_outstanding": 12259858.0,
+            "beta": 1.666
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.6660 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.1263
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "70,522,867,330.00 × (-0.1631 − 0.1263)",
+              "result": -20406496890.6088
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "70,522,867,330.00 + -20,406,496,890.61 / 0.1263",
+              "result": -91048762841.09106
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "011200.KS",
+      "market": "KR",
+      "name": "HMM",
+      "currency": "KRW",
+      "price": 21050.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -670188634112.0,
+            "shares_outstanding": 1001298507.0,
+            "cash": 12659658326016.0,
+            "total_debt": 6116806230016.0,
+            "beta": 0.758,
+            "fcf_growth": null,
+            "eps_growth": -0.052
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 17049.169757458756,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 26569235000000.0,
+            "roe": 0.05198,
+            "shares_outstanding": 1001298507.0,
+            "beta": 0.758
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 0.7580 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.0809
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "26,569,235,000,000.00 × (0.0520 − 0.0809)",
+              "result": -768382276200.0
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "26,569,235,000,000.00 + -768,382,276,200.00 / 0.0809",
+              "result": 17071308223733.004
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "17,071,308,223,733.00 / 1,001,298,507.00",
+              "result": 17049.169757458756
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": -0.052
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "010140.KS",
+      "market": "KR",
+      "name": "삼성중공업",
+      "currency": "KRW",
+      "price": 21400.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+        "cash": "yfinance Ticker.info['totalCash']",
+        "total_debt": "yfinance Ticker.info['totalDebt']",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance Ticker.info['netIncomeToCommon'] (TTM)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "tax_rate": "yfinance income_stmt['Tax Provision'] / ['Pretax Income']",
+        "roe": "yfinance Ticker.info['returnOnEquity']",
+        "eps_growth": "yfinance Ticker.info['earningsGrowth']",
+        "beta": "yfinance Ticker.info['beta']"
+      },
+      "metrics": {
+        "dcf": {
+          "value": 56143.64523432257,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "fcf": 3042812100608.0,
+            "shares_outstanding": 853739596.0,
+            "cash": 2336571785216.0,
+            "total_debt": 1335302422528.0,
+            "beta": 1.053,
+            "fcf_growth": null,
+            "eps_growth": 0.052
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0530 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.09565
+            },
+            {
+              "label": "적용 성장률 g (출처: inputs.eps_growth (FCF 성장률 부재 시 대용))",
+              "formula": "g = max(min(raw_growth, fcf_growth_cap), -0.10)",
+              "substitution": "max(min(0.0520, 0.2500), -0.10)",
+              "result": 0.052
+            },
+            {
+              "label": "추정기간(5년) FCF 현재가치 합 ΣPV (2단계 성장 fade=True)",
+              "formula": "g_t = g + (g∞−g)×(t−1)/(n−1),  PV_t = FCFₜ/(1+r)^t,  ΣPV = Σ PV_t",
+              "substitution": "FCF₀=3,042,812,100,608.00, g=0.0520→g∞=0.0250, r=0.0956 → 연도별 현가 합산",
+              "result": 13165657349634.652,
+              "projection": [
+                {
+                  "year": 1,
+                  "growth_rate": 0.052,
+                  "projected_fcf": 3201038329839.616,
+                  "discount_factor": 1.09565,
+                  "present_value": 2921588399433.7754
+                },
+                {
+                  "year": 2,
+                  "growth_rate": 0.04525,
+                  "projected_fcf": 3345885314264.859,
+                  "discount_factor": 1.2004489225000001,
+                  "present_value": 2787195066406.3833
+                },
+                {
+                  "year": 3,
+                  "growth_rate": 0.0385,
+                  "projected_fcf": 3474701898864.0557,
+                  "discount_factor": 1.315271861937125,
+                  "present_value": 2641812692431.916
+                },
+                {
+                  "year": 4,
+                  "growth_rate": 0.03175,
+                  "projected_fcf": 3585023684152.9893,
+                  "discount_factor": 1.4410776155314111,
+                  "present_value": 2487738096487.591
+                },
+                {
+                  "year": 5,
+                  "growth_rate": 0.025,
+                  "projected_fcf": 3674649276256.8135,
+                  "discount_factor": 1.5789166894569906,
+                  "present_value": 2327323094874.988
+                }
+              ]
+            },
+            {
+              "label": "영구가치(Terminal Value) 현재가치",
+              "formula": "TV = FCF_n×(1+g∞)/(r-g∞),  PV(TV) = TV/(1+r)^n",
+              "substitution": "3,674,649,276,256.81×(1+0.0250)/(0.0956-0.0250) ÷ (1+0.0956)^5",
+              "result": 33765126287995.223,
+              "terminal_value": 53312321417738.625
+            },
+            {
+              "label": "기업가치 = ΣPV + PV(TV)",
+              "formula": "EV = ΣPV(FCF) + PV(TV)",
+              "substitution": "13,165,657,349,634.65 + 33,765,126,287,995.22",
+              "result": 46930783637629.875
+            },
+            {
+              "label": "주주가치 = 기업가치 + 현금 - 총부채",
+              "formula": "Equity = EV + cash - total_debt",
+              "substitution": "46,930,783,637,629.88 + 2,336,571,785,216.00 - 1,335,302,422,528.00",
+              "result": 47932053000317.875
+            },
+            {
+              "label": "1주당 내재가치 = 주주가치 / 주식수",
+              "formula": "DCF = Equity / shares_outstanding",
+              "substitution": "47,932,053,000,317.88 / 853,739,596.00",
+              "result": 56143.64523432257
+            }
+          ],
+          "input_sources": {
+            "fcf": "yfinance Ticker.info['freeCashflow'] (TTM)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance Ticker.info['totalCash']",
+            "total_debt": "yfinance Ticker.info['totalDebt']",
+            "beta": "yfinance Ticker.info['beta']",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        },
+        "srim": {
+          "value": 6793.452955192468,
+          "applicable": true,
+          "reason": null,
+          "inputs_used": {
+            "book_value": 4148939309640.0,
+            "roe": 0.13371,
+            "shares_outstanding": 853739596.0,
+            "beta": 1.053
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0530 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.09565
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "4,148,939,309,640.00 × (0.1337 − 0.0956)",
+              "result": 157908630124.89838
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "4,148,939,309,640.00 + 157,908,630,124.90 / 0.0956",
+              "result": 5799839781411.023
+            },
+            {
+              "label": "1주당 내재가치 = 자기자본가치 / 주식수",
+              "formula": "S-RIM = Value / shares_outstanding",
+              "substitution": "5,799,839,781,411.02 / 853,739,596.00",
+              "result": 6793.452955192468
+            }
+          ],
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance Ticker.info['returnOnEquity']",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "yfinance Ticker.info['beta']"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": 0.052
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "yfinance Ticker.info['earningsGrowth']"
+          }
+        }
+      },
+      "error": null
+    },
+    {
+      "ticker": "393210.KQ",
+      "market": "KR",
+      "name": "토마토시스템",
+      "currency": "KRW",
+      "price": 2295.0,
+      "data_sources": {
+        "price": "yfinance Ticker.info['currentPrice'|'regularMarketPrice']",
+        "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+        "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+        "cash": "yfinance balance_sheet['Cash Cash Equivalents And Short Term Investments'|'Cash And Cash Equivalents'] (최신)",
+        "total_debt": "yfinance balance_sheet['Total Debt'] (최신)",
+        "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+        "net_income": "yfinance income_stmt['Net Income'] (최신 회계연도)",
+        "ebit": "yfinance income_stmt['EBIT'|'Operating Income'] (최신)",
+        "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+        "beta": "기본값 1.0 (info['beta'] 부재)"
+      },
+      "metrics": {
+        "dcf": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "fcf": -24097324900.0,
+            "shares_outstanding": 15639357.0,
+            "cash": 1656098350.0,
+            "total_debt": 22114956110.0,
+            "beta": 1.0,
+            "fcf_growth": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "projection_years": 5,
+            "terminal_growth": 0.025,
+            "fcf_growth_cap": 0.25,
+            "dcf_fade": true,
+            "discount_rate_override": null
+          },
+          "steps": [],
+          "reason": "FCF가 없거나 0 이하, 또는 주식수 데이터 부족 → DCF 미적용",
+          "input_sources": {
+            "fcf": "yfinance cashflow['Free Cash Flow'] (최신 회계연도)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "cash": "yfinance balance_sheet['Cash Cash Equivalents And Short Term Investments'|'Cash And Cash Equivalents'] (최신)",
+            "total_debt": "yfinance balance_sheet['Total Debt'] (최신)",
+            "beta": "기본값 1.0 (info['beta'] 부재)",
+            "fcf_growth": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        },
+        "srim": {
+          "value": null,
+          "applicable": true,
+          "inputs_used": {
+            "book_value": 25886318170.0,
+            "roe": -0.07733187959962404,
+            "shares_outstanding": 15639357.0,
+            "beta": 1.0
+          },
+          "assumptions_used": {
+            "risk_free_rate": 0.043,
+            "equity_risk_premium": 0.05,
+            "terminal_growth": 0.025,
+            "srim_persistence": 1.0,
+            "discount_rate_override": null
+          },
+          "steps": [
+            {
+              "label": "요구수익률 r (CAPM)",
+              "formula": "r = max(rf + β × ERP, terminal_growth + 0.01)",
+              "substitution": "max(0.0430 + 1.0000 × 0.0500, 0.0250 + 0.01)",
+              "result": 0.093
+            },
+            {
+              "label": "초과이익 = 자본총계 × (ROE − r)",
+              "formula": "ExcessReturn = BV × (ROE − r)",
+              "substitution": "25,886,318,170.00 × (-0.0773 − 0.0930)",
+              "result": -4409265229.81
+            },
+            {
+              "label": "내재 자기자본가치 (초과이익 영구 지속, w ≥ 1)",
+              "formula": "Value = BV + ExcessReturn / r",
+              "substitution": "25,886,318,170.00 + -4,409,265,229.81 / 0.0930",
+              "result": -21525135913.9785
+            }
+          ],
+          "reason": "산출된 자기자본가치가 0 이하 → S-RIM 미적용",
+          "input_sources": {
+            "book_value": "yfinance balance_sheet['Stockholders Equity'|'Common Stock Equity'|'Total Equity Gross Minority Interest'] (최신)",
+            "roe": "yfinance income_stmt['Net Income'] / book_value (직접 환산)",
+            "shares_outstanding": "yfinance income_stmt['Diluted Average Shares'] (최신 회계연도, 완전희석)",
+            "beta": "기본값 1.0 (info['beta'] 부재)"
+          }
+        },
+        "peg": {
+          "value": null,
+          "applicable": false,
+          "inputs_used": {
+            "eps": null,
+            "eps_growth": null
+          },
+          "assumptions_used": {
+            "fair_peg": 1.0,
+            "peg_growth_cap": 0.5
+          },
+          "steps": [],
+          "reason": "EPS가 없거나 적자(≤ 0) → PEG 미적용",
+          "input_sources": {
+            "eps": "출처 미기록",
+            "eps_growth": "출처 미기록"
+          }
+        }
+      },
+      "error": null
+    }
+  ]
+}
