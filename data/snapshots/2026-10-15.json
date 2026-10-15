@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-10-15",
-  "generated_at": "2026-10-15T00:10:12.199214+00:00",
+  "generated_at": "2026-10-15T23:57:16.085908+00:00",
   "provider": "yahoo",
   "assumptions": {
     "risk_free_rate": 0.043,
@@ -22,26 +22,26 @@
       "market": "US",
       "name": "Apple",
       "currency": "USD",
-      "price": 342.96,
+      "price": 342.0,
       "valuation": {
         "dcf": 164.77466727744888,
         "srim": 75.78658989746012,
-        "peg": 250.264,
-        "composite": 163.60841905830299,
-        "composite_low": 113.84817015993895,
-        "composite_high": 224.6852520062325,
-        "dispersion": 0.43539860836730704,
+        "peg": 251.41199999999998,
+        "composite": 163.99108572496968,
+        "composite_low": 113.9830674867422,
+        "composite_high": 225.36876860907384,
+        "dispersion": 0.43722446246971514,
         "fcf_conversion": 0.8355066945600048,
         "roic": 1.173528886205637,
         "roic_spread": 1.077078886205637,
         "confidence": "낮음(모델 발산)",
-        "discrepancy_pct": 109.62246440250965,
+        "discrepancy_pct": 108.54792105808117,
         "signal": "과열 경고",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "AAPL",
-        "price": 342.96,
+        "price": 342.0,
         "shares_outstanding": 15004697000.0,
         "fcf": 107721875456.0,
         "cash": 62399000576.0,
@@ -51,7 +51,7 @@
         "ebit": 133050000000.0,
         "tax_rate": 0.15610002335586043,
         "roe": 1.4875101,
-        "eps": 8.72,
+        "eps": 8.76,
         "eps_growth": 0.287,
         "fcf_growth": null,
         "beta": 1.069,
@@ -66,7 +66,7 @@
       "market": "US",
       "name": "Tesla",
       "currency": "USD",
-      "price": 367.16,
+      "price": 362.44,
       "valuation": {
         "dcf": 18.698376792400882,
         "srim": 7.832024623044335,
@@ -79,13 +79,13 @@
         "roic": 0.07499811777702618,
         "roic_spread": -0.0638018822229738,
         "confidence": "낮음(모델 발산)",
-        "discrepancy_pct": 3257.1380009017703,
+        "discrepancy_pct": 3213.9805453939352,
         "signal": "측정한계",
         "out_of_domain": true
       },
       "inputs": {
         "ticker": "TSLA",
-        "price": 367.16,
+        "price": 362.44,
         "shares_outstanding": 3526250000.0,
         "fcf": 4835999744.0,
         "cash": 43524001792.0,
@@ -95,7 +95,7 @@
         "ebit": 5616000000.0,
         "tax_rate": 0.2696097006441834,
         "roe": 0.046669997,
-        "eps": 1.08,
+        "eps": 1.06,
         "eps_growth": -0.03,
         "fcf_growth": null,
         "beta": 1.916,
@@ -105,7 +105,7 @@
       "notes": [
         "PEG 미적용 (EPS 적자 또는 성장률 0 이하)",
         "ROIC 7.5% < 요구수익률 13.9%: 성장이 가치를 창출하지 못해 DCF/PEG 가중을 축소했습니다 (자산가치 중심 평가)",
-        "측정한계: 펀더멘털 대비 극단 고평가(밴드 괴리 +2459%)이며 모델 발산(CV 0.41)도 커 점추정 적정가의 정밀도가 무의미합니다. 내러티브 프리미엄이 큰 종목으로, 괴리율 숫자 자체보다 방향·추세로만 해석하세요 (모델 유효범위 밖)."
+        "측정한계: 펀더멘털 대비 극단 고평가(밴드 괴리 +2426%)이며 모델 발산(CV 0.41)도 커 점추정 적정가의 정밀도가 무의미합니다. 내러티브 프리미엄이 큰 종목으로, 괴리율 숫자 자체보다 방향·추세로만 해석하세요 (모델 유효범위 밖)."
       ],
       "error": null
     },
@@ -114,7 +114,7 @@
       "market": "US",
       "name": "Palantir",
       "currency": "USD",
-      "price": 200.97,
+      "price": 200.5,
       "valuation": {
         "dcf": 17.64209884887082,
         "srim": 8.912424350892374,
@@ -127,13 +127,13 @@
         "roic": null,
         "roic_spread": null,
         "confidence": "낮음(모델 발산)",
-        "discrepancy_pct": 613.0428712555126,
+        "discrepancy_pct": 611.375308188935,
         "signal": "측정한계",
         "out_of_domain": true
       },
       "inputs": {
         "ticker": "PLTR",
-        "price": 200.97,
+        "price": 200.5,
         "shares_outstanding": 2565197000.0,
         "fcf": 2159104512.0,
         "cash": 9409098752.0,
@@ -151,7 +151,7 @@
         "currency": "USD"
       },
       "notes": [
-        "측정한계: 펀더멘털 대비 극단 고평가(밴드 괴리 +402%)이며 모델 발산(CV 0.76)도 커 점추정 적정가의 정밀도가 무의미합니다. 내러티브 프리미엄이 큰 종목으로, 괴리율 숫자 자체보다 방향·추세로만 해석하세요 (모델 유효범위 밖)."
+        "측정한계: 펀더멘털 대비 극단 고평가(밴드 괴리 +401%)이며 모델 발산(CV 0.76)도 커 점추정 적정가의 정밀도가 무의미합니다. 내러티브 프리미엄이 큰 종목으로, 괴리율 숫자 자체보다 방향·추세로만 해석하세요 (모델 유효범위 밖)."
       ],
       "error": null
     },
@@ -160,7 +160,7 @@
       "market": "US",
       "name": "Sattlelogic",
       "currency": "USD",
-      "price": 4.125,
+      "price": 4.11,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -179,7 +179,7 @@
       },
       "inputs": {
         "ticker": "SATL",
-        "price": 4.125,
+        "price": 4.11,
         "shares_outstanding": 134134266.0,
         "fcf": -18836376.0,
         "cash": 112809000.0,
@@ -209,7 +209,7 @@
       "market": "US",
       "name": "Coinbase",
       "currency": "USD",
-      "price": 172.89,
+      "price": 183.81,
       "valuation": {
         "dcf": 57.91795224867523,
         "srim": null,
@@ -222,13 +222,13 @@
         "roic": 0.10503464901089603,
         "roic_spread": -0.10841535098910395,
         "confidence": "낮음(교차검증 불가)",
-        "discrepancy_pct": 198.5084818912163,
+        "discrepancy_pct": 217.36273964037522,
         "signal": "과열 경고",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "COIN",
-        "price": 172.89,
+        "price": 183.81,
         "shares_outstanding": 287209000.0,
         "fcf": 2668452864.0,
         "cash": 8788842496.0,
@@ -238,7 +238,7 @@
         "ebit": 1607478000.0,
         "tax_rate": 0.17196243261621547,
         "roe": -0.07847,
-        "eps": -3.84,
+        "eps": -3.65,
         "eps_growth": null,
         "fcf_growth": null,
         "beta": 3.409,
@@ -257,7 +257,7 @@
       "market": "US",
       "name": "Joby Aviaton",
       "currency": "USD",
-      "price": 4.61,
+      "price": 4.81,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -276,7 +276,7 @@
       },
       "inputs": {
         "ticker": "JOBY",
-        "price": 4.61,
+        "price": 4.81,
         "shares_outstanding": 826240955.0,
         "fcf": -436446240.0,
         "cash": 2263825920.0,
@@ -305,7 +305,7 @@
       "market": "US",
       "name": "Bakkt",
       "currency": "USD",
-      "price": 5.98,
+      "price": 5.9,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -324,7 +324,7 @@
       },
       "inputs": {
         "ticker": "BKKT",
-        "price": 5.98,
+        "price": 5.9,
         "shares_outstanding": 25523039.0,
         "fcf": -33939000.0,
         "cash": 51852000.0,
@@ -334,7 +334,7 @@
         "ebit": -141714000.0,
         "tax_rate": null,
         "roe": -0.1017,
-        "eps": -3.67,
+        "eps": -3.4,
         "eps_growth": null,
         "fcf_growth": null,
         "beta": 6.066,
@@ -354,7 +354,7 @@
       "market": "US",
       "name": "abcellera",
       "currency": "USD",
-      "price": 12.37,
+      "price": 12.68,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -373,7 +373,7 @@
       },
       "inputs": {
         "ticker": "ABCL",
-        "price": 12.37,
+        "price": 12.68,
         "shares_outstanding": 298707082.0,
         "fcf": -46431124.0,
         "cash": 540104000.0,
@@ -383,7 +383,7 @@
         "ebit": -203213000.0,
         "tax_rate": null,
         "roe": -0.17304,
-        "eps": -0.54,
+        "eps": -0.53,
         "eps_growth": null,
         "fcf_growth": null,
         "beta": 1.41,
@@ -403,7 +403,7 @@
       "market": "US",
       "name": "Microstrategy",
       "currency": "USD",
-      "price": 143.24,
+      "price": 151.29,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -422,7 +422,7 @@
       },
       "inputs": {
         "ticker": "MSTR",
-        "price": 143.24,
+        "price": 151.29,
         "shares_outstanding": 277660000.0,
         "fcf": -22587523072.0,
         "cash": 2447982080.0,
@@ -432,7 +432,7 @@
         "ebit": -5460986000.0,
         "tax_rate": null,
         "roe": -0.63562,
-        "eps": -99.08,
+        "eps": -93.26,
         "eps_growth": null,
         "fcf_growth": null,
         "beta": 3.571,
@@ -452,7 +452,7 @@
       "market": "US",
       "name": "Tilley",
       "currency": "USD",
-      "price": 3.14,
+      "price": 3.21,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -471,7 +471,7 @@
       },
       "inputs": {
         "ticker": "TLRY",
-        "price": 3.14,
+        "price": 3.21,
         "shares_outstanding": 111832375.0,
         "fcf": -16626875.0,
         "cash": 218007008.0,
@@ -501,7 +501,7 @@
       "market": "US",
       "name": "Smr",
       "currency": "USD",
-      "price": 5.83,
+      "price": 6.15,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -520,7 +520,7 @@
       },
       "inputs": {
         "ticker": "SMR",
-        "price": 5.83,
+        "price": 6.15,
         "shares_outstanding": 163731673.0,
         "fcf": -204594000.0,
         "cash": 1072147968.0,
@@ -530,7 +530,7 @@
         "ebit": -689571000.0,
         "tax_rate": null,
         "roe": -0.5518,
-        "eps": -2.92,
+        "eps": -2.62,
         "eps_growth": null,
         "fcf_growth": null,
         "beta": 2.371,
@@ -550,7 +550,7 @@
       "market": "US",
       "name": "SpaceX",
       "currency": "USD",
-      "price": 152.16,
+      "price": 148.62,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -569,7 +569,7 @@
       },
       "inputs": {
         "ticker": "SPCX",
-        "price": 152.16,
+        "price": 148.62,
         "shares_outstanding": 9649000000.0,
         "fcf": -14121000000.0,
         "cash": 100009000960.0,
@@ -598,7 +598,7 @@
       "market": "US",
       "name": "PoetTechnology",
       "currency": "USD",
-      "price": 5.84,
+      "price": 6.01,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -617,7 +617,7 @@
       },
       "inputs": {
         "ticker": "POET",
-        "price": 5.84,
+        "price": 6.01,
         "shares_outstanding": 93156184.0,
         "fcf": -36494488.0,
         "cash": 796341888.0,
@@ -646,26 +646,26 @@
       "market": "US",
       "name": "Circle",
       "currency": "USD",
-      "price": 79.55,
+      "price": 86.97,
       "valuation": {
-        "dcf": 29.23411682506124,
+        "dcf": 32.1887456092415,
         "srim": 34.61966070549326,
-        "peg": null,
-        "composite": 33.08093388251269,
-        "composite_low": 28.75498489390021,
-        "composite_high": 34.475986986024786,
-        "dispersion": 0.08434182109045936,
+        "peg": 8.81100000000001,
+        "composite": 28.344199416216593,
+        "composite_low": 18.980444873801176,
+        "composite_high": 40.359240432210946,
+        "dispersion": 0.46161746412328003,
         "fcf_conversion": 0.4569926815003236,
         "roic": -0.04972716351965397,
         "roic_spread": -0.14272716351965398,
-        "confidence": "보통(이익질 의심)",
-        "discrepancy_pct": 140.47084124808183,
+        "confidence": "낮음(모델 발산)",
+        "discrepancy_pct": 206.83526714902297,
         "signal": "과열 경고",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "CRCL",
-        "price": 79.55,
+        "price": 86.97,
         "shares_outstanding": 158699000.0,
         "fcf": 206229376.0,
         "cash": 1730125952.0,
@@ -675,15 +675,14 @@
         "ebit": -101667000.0,
         "tax_rate": null,
         "roe": 0.15347,
-        "eps": 1.47,
-        "eps_growth": -0.0012857142857142234,
+        "eps": 1.38,
+        "eps_growth": 0.0638478260869566,
         "fcf_growth": null,
         "beta": 1.0,
         "name": "Circle Internet Group, Inc.",
         "currency": "USD"
       },
       "notes": [
-        "PEG 미적용 (EPS 적자 또는 성장률 0 이하)",
         "ROIC -5.0% < 요구수익률 9.3%: 성장이 가치를 창출하지 못해 DCF/PEG 가중을 축소했습니다 (자산가치 중심 평가)",
         "이익의 질 주의: FCF 전환율 46% (회계이익 대비 현금 창출 미흡)"
       ],
@@ -694,7 +693,7 @@
       "market": "KR",
       "name": "삼성전자",
       "currency": "KRW",
-      "price": 232000.0,
+      "price": 210000.0,
       "valuation": {
         "dcf": 203648.30554009587,
         "srim": 162101.90788136594,
@@ -707,13 +706,13 @@
         "roic": 0.1782476262963137,
         "roic_spread": 0.05799762629631369,
         "confidence": "보통(이익질 의심)",
-        "discrepancy_pct": 26.86253704664906,
+        "discrepancy_pct": 14.832468878432339,
         "signal": "적정",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "005930.KS",
-        "price": 232000.0,
+        "price": 210000.0,
         "shares_outstanding": 6703158564.0,
         "fcf": 69550825537536.0,
         "cash": 189999035187200.0,
@@ -741,7 +740,7 @@
       "market": "KR",
       "name": "메디포스트",
       "currency": "KRW",
-      "price": 9340.0,
+      "price": 8940.0,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -760,7 +759,7 @@
       },
       "inputs": {
         "ticker": "078160.KQ",
-        "price": 9340.0,
+        "price": 8940.0,
         "shares_outstanding": 35464291.0,
         "fcf": -60422748780.0,
         "cash": 78033844430.0,
@@ -790,7 +789,7 @@
       "market": "KR",
       "name": "NAVER",
       "currency": "KRW",
-      "price": 179400.0,
+      "price": 173600.0,
       "valuation": {
         "dcf": 149338.33918837138,
         "srim": 114288.65141470336,
@@ -803,13 +802,13 @@
         "roic": 0.07844942559570359,
         "roic_spread": -0.023950574404296404,
         "confidence": "보통(이익질 의심)",
-        "discrepancy_pct": 44.324931407319504,
-        "signal": "과열 경고",
+        "discrepancy_pct": 39.65890798389445,
+        "signal": "프리미엄",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "035420.KS",
-        "price": 179400.0,
+        "price": 173600.0,
         "shares_outstanding": 151329878.0,
         "fcf": 902243549184.0,
         "cash": 8991635668992.0,
@@ -838,7 +837,7 @@
       "market": "KR",
       "name": "오이솔루션",
       "currency": "KRW",
-      "price": 28550.0,
+      "price": 24700.0,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -857,7 +856,7 @@
       },
       "inputs": {
         "ticker": "138080.KQ",
-        "price": 28550.0,
+        "price": 24700.0,
         "shares_outstanding": 10234371.0,
         "fcf": -12878772370.0,
         "cash": 28718265910.0,
@@ -887,7 +886,7 @@
       "market": "KR",
       "name": "삼성에스디에스",
       "currency": "KRW",
-      "price": 202500.0,
+      "price": 194300.0,
       "valuation": {
         "dcf": 154757.41780519878,
         "srim": 78401.73759548405,
@@ -900,13 +899,13 @@
         "roic": 0.1945339587722697,
         "roic_spread": 0.0876339587722697,
         "confidence": "보통",
-        "discrepancy_pct": 73.70109241646958,
+        "discrepancy_pct": 66.6672704025681,
         "signal": "과열 경고",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "018260.KS",
-        "price": 202500.0,
+        "price": 194300.0,
         "shares_outstanding": 77353988.0,
         "fcf": 506540851200.0,
         "cash": 7635447316480.0,
@@ -933,7 +932,7 @@
       "market": "KR",
       "name": "솔트룩스",
       "currency": "KRW",
-      "price": 12970.0,
+      "price": 12120.0,
       "valuation": {
         "dcf": 11338.21438258094,
         "srim": null,
@@ -946,13 +945,13 @@
         "roic": -0.2130816281322842,
         "roic_spread": -0.3390816281322842,
         "confidence": "낮음(교차검증 불가)",
-        "discrepancy_pct": 14.391910069419712,
+        "discrepancy_pct": 6.895138784993591,
         "signal": "적정",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "304100.KQ",
-        "price": 12970.0,
+        "price": 12120.0,
         "shares_outstanding": 12259858.0,
         "fcf": 10083840000.0,
         "cash": 47620612096.0,
@@ -981,7 +980,7 @@
       "market": "KR",
       "name": "HMM",
       "currency": "KRW",
-      "price": 23350.0,
+      "price": 23200.0,
       "valuation": {
         "dcf": null,
         "srim": 17536.90824384505,
@@ -994,13 +993,13 @@
         "roic": 0.10356086785869253,
         "roic_spread": 0.024910867858692537,
         "confidence": "낮음(교차검증 불가)",
-        "discrepancy_pct": 33.14775714924082,
+        "discrepancy_pct": 32.29241823821786,
         "signal": "프리미엄",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "011200.KS",
-        "price": 23350.0,
+        "price": 23200.0,
         "shares_outstanding": 1001298507.0,
         "fcf": -670188634112.0,
         "cash": 12659658326016.0,
@@ -1029,7 +1028,7 @@
       "market": "KR",
       "name": "삼성중공업",
       "currency": "KRW",
-      "price": 18950.0,
+      "price": 18170.0,
       "valuation": {
         "dcf": 55710.435073487475,
         "srim": 6765.161636274436,
@@ -1042,13 +1041,13 @@
         "roic": 0.20689774038523137,
         "roic_spread": 0.11084774038523137,
         "confidence": "낮음(모델 발산)",
-        "discrepancy_pct": -39.33631370330223,
+        "discrepancy_pct": -41.833288653773174,
         "signal": "적정",
         "out_of_domain": false
       },
       "inputs": {
         "ticker": "010140.KS",
-        "price": 18950.0,
+        "price": 18170.0,
         "shares_outstanding": 853739596.0,
         "fcf": 3042812100608.0,
         "cash": 2336571785216.0,
@@ -1075,7 +1074,7 @@
       "market": "KR",
       "name": "토마토시스템",
       "currency": "KRW",
-      "price": 2890.0,
+      "price": 3195.0,
       "valuation": {
         "dcf": null,
         "srim": null,
@@ -1094,7 +1093,7 @@
       },
       "inputs": {
         "ticker": "393210.KQ",
-        "price": 2890.0,
+        "price": 3195.0,
         "shares_outstanding": 15639357.0,
         "fcf": -24097324900.0,
         "cash": 1656098350.0,
